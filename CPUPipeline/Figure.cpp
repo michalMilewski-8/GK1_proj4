@@ -71,23 +71,27 @@ void Triangle::DrawTriangle(bool backface_culling, bool paint_triangles, bool z_
 				if (db < 0) {
 					B = A * (1 - dc) + B * dc;
 				}
-
+				
 			}
 			if (add) {
-				if(i==0)
 				points.push_back(A);
 				points.push_back(B);
 			}
 		}
 	
-		for (int k = 1; k < ((int)points.size() - 1); k++) {
+		for (int k = 1; k < ((int)points.size() - 1); k++) 
+		{
 			auto tmp_ = points[0] / points[0].w;
 			auto tmp2_ = points[k] / points[k].w;
 			auto tmp3_ = points[k + 1] / points[k + 1].w;
 
-			auto tmp = tmp_ * cam->GetViewPortMAtrix();
-			auto tmp2 = tmp2_ * cam->GetViewPortMAtrix();
-			auto tmp3 = tmp3_ * cam->GetViewPortMAtrix();
+	/*		auto tmp_ = after_transformations[0] / after_transformations[0].w;
+			auto tmp2_ = after_transformations[1] / after_transformations[1].w;
+			auto tmp3_ = after_transformations[1 + 1] / after_transformations[1 + 1].w;*/
+
+			glm::vec3 tmp = { (tmp_.x+1)*1280/2,(tmp_.y + 1) * 720 / 2,(tmp_.z+1)/2 };
+			glm::vec3 tmp2 = { (tmp2_.x + 1) * 1280 / 2,(tmp2_.y + 1) * 720 / 2,(tmp2_.z + 1) / 2 };
+			glm::vec3 tmp3 = { (tmp3_.x + 1) * 1280 / 2,(tmp3_.y + 1) * 720 / 2,(tmp3_.z + 1) / 2 };
 			//auto tmp = points[0] / points[0].w;
 			//auto tmp2 = points[k] / points[k].w;
 			//auto tmp3 = points[k + 1] / points[k + 1].w;
@@ -95,6 +99,7 @@ void Triangle::DrawTriangle(bool backface_culling, bool paint_triangles, bool z_
 
 			if (paint_triangles)
 			{
+				//z_bufferng = false;
 				if (z_bufferng)
 					fb.FillTriangle(tmp.x, tmp.y, tmp.z, tmp2.x, tmp2.y, tmp2.z, tmp3.x, tmp3.y, tmp3.z, color);
 				else
@@ -146,13 +151,16 @@ fig->transformation * fig->vertices[vertices_ind[2]] };
 		//transformed_tangential_vectors[1] /= transformed_tangential_vectors[1].w;
 		//transformed_tangential_vectors[2] /= transformed_tangential_vectors[2].w;
 
-	after_transformations[0] /= after_transformations[0].w;
-	after_transformations[1] /= after_transformations[1].w;
-	after_transformations[2] /= after_transformations[2].w;
+	//after_transformations[0] /= after_transformations[0].w;
+	//after_transformations[1] /= after_transformations[1].w;
+	//after_transformations[2] /= after_transformations[2].w;
 }
 
 void Figure::Transform(glm::mat4 proj, glm::mat4 view) {
 	transformation = proj * view * scale * translate * rotate * center;
+	/*modelT_1 = scale * translate * rotate * center;
+	modelT_1 = glm::transpose(modelT_1);
+	modelT_1 = glm::inverse(modelT_1);*/
 }
 
 Cube::Cube(std::vector<glm::vec4> vert)

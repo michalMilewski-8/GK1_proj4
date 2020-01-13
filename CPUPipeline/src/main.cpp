@@ -82,8 +82,8 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 		diff.x /= 1000;
 		diff.y /= 1000;
 		angle += diff;
-		cameraFront.x = std::cos(angle.y) * std::cos(angle.x);
-		cameraFront.z = std::cos(angle.y) * std::sin(angle.x) - 1;
+		cameraFront.x = std::cos(-angle.y) * std::cos(-angle.x);
+		cameraFront.z = std::cos(-angle.y) * std::sin(-angle.x) - 1;
 		cameraFront.y = std::sin(-angle.y);
 	}
 
@@ -436,7 +436,7 @@ void CreateMenu(std::vector<Figure*>* figures, std::vector<Camera*>* cameras) {
 		{
 			Camera* cam = new Camera(def_cameraPos, def_cameraFront, def_cameraUp);
 			cam->SetViewport(0, 0, current_width, current_height);
-			cam->SetPerspective(fov, ((float)current_height / (float)current_width), 1, 100);
+			cam->SetPerspective(fov, ((float)current_height / (float)current_width), 10, 12);
 			cameras->push_back(cam);
 		}
 		//ImGui::SameLine();
@@ -573,7 +573,7 @@ int main(int, char**)
 
 		//write your render pipeline here
 		cam->LookAt(cameraPos, cameraFront, cameraUp);
-		cam->SetPerspective(fov, ((float)current_height / (float)current_width), 1, 100);
+		cam->SetPerspective(fov, ((float)current_height / (float)current_width), 1, 5);
 		cam = cameras[active_camera_index];
 		cam->SetPosFrontUp(cameraPos, cameraFront, cameraUp);
 		//TODO: get MVP matrix
@@ -592,8 +592,8 @@ int main(int, char**)
 			for (auto t : fig->triangles) {
 				//t.CalculateNormalVectors();
 				t.CalculatePointsAfterTransformation();
-				//t.DrawTriangle(backface_culling, paint_triangles, z_bufferng, perspective_correction, fb, color,cam);
-				auto tmp = t.after_transformations[0];
+				t.DrawTriangle(backface_culling, paint_triangles, z_bufferng, perspective_correction, fb, color,cam);
+				/*auto tmp = t.after_transformations[0];
 				auto tmp2 = t.after_transformations[1];
 				auto tmp3 = t.after_transformations[2];
 				float val = 1.0f;
@@ -619,7 +619,7 @@ int main(int, char**)
 						fb.DrawLine(tmp2.x, tmp2.y,  tmp3.x, tmp3.y, RGB(255, 0, 0));
 						fb.DrawLine(tmp3.x, tmp3.y,  tmp.x, tmp.y, RGB(255, 0, 0));
 					}
-				}
+				}*/
 			}
 		}
 

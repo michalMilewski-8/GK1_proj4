@@ -49,6 +49,7 @@ public:
 	glm::mat4 center = glm::mat4(1.0f);
 
 	glm::mat4 transformation = glm::mat4(1.0f);
+	glm::mat4 modelT_1 = glm::mat4(1.0f);
 
 	float x_angle = 0.0f;
 	float y_angle = 0.0f;

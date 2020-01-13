@@ -127,8 +127,8 @@ void FrameBuffer::SetPixel(int x, int y, float z, int color)
 
 	int dep = y * m_width + x;
 	int idx = m_bytesPerPixel * (y * m_width + x);
-	z *= -1;
-	if (z > m_depth_buffor[dep]) {
+	//z *= -1;
+	if (z >= m_depth_buffor[dep]) {
 		m_depth_buffor[dep] = z;
 		m_color_buffer[idx] = RED(color);
 		m_color_buffer[idx + 1] = GREEN(color);
