@@ -1,0 +1,11 @@
+# Binaries
+**/bin/
+!premake5.exe
+obj/
+
+# Visual Studio files and folder
+.vs/
+**.sln
+**.vcxproj
+**.vcxproj.filters
+**.vcxproj.user
