@@ -11,6 +11,11 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include "../Cone.h"
+#include "../Cube.h"
+#include "../Sphere.h"
+#include "../Cylinder.h"
+#include "../Helper.h"
 
 #define DEFAULT_WIDTH 1280
 #define DEFAULT_HEIGHT 720
@@ -33,6 +38,8 @@ bool paint_triangles = true;
 bool perspective_correction = false;
 bool backface_culling = true;
 bool z_bufferng = true;
+
+
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -127,224 +134,12 @@ void timeMeasurement(GLFWwindow* win, double& deltaTime, double& currentTime)
 	}
 }
 
-glm::mat4 createRotationMatrix(float x_angle, float y_angle, float z_angle, Figure* fig) {
-	glm::mat4 x_rotate = glm::mat4(1.0f);
-	x_rotate[1][1] = std::cos(x_angle);
-	x_rotate[2][1] = -std::sin(x_angle);
-	x_rotate[1][2] = std::sin(x_angle);
-	x_rotate[2][2] = std::cos(x_angle);
-
-	glm::mat4 y_rotate = glm::mat4(1.0f);
-	y_rotate[0][0] = std::cos(y_angle);
-	y_rotate[2][0] = -std::sin(y_angle);
-	y_rotate[0][2] = std::sin(y_angle);
-	y_rotate[2][2] = std::cos(y_angle);
-
-	glm::mat4 z_rotate = glm::mat4(1.0f);
-	z_rotate[0][0] = std::cos(z_angle);
-	z_rotate[1][0] = -std::sin(z_angle);
-	z_rotate[0][1] = std::sin(z_angle);
-	z_rotate[1][1] = std::cos(z_angle);
-	fig->x_angle = x_angle;
-	fig->y_angle = y_angle;
-	fig->z_angle = z_angle;
-
-	return x_rotate * y_rotate * z_rotate;
-}
-
-void getRotateValue(float& x, float& y, float& z, Figure* fig) {
-	x = fig->x_angle;
-	y = fig->y_angle;
-	z = fig->z_angle;
-}
-
-glm::mat4 createTranslationMatrix(float x, float y, float z) {
-	glm::mat4 translate = glm::mat4(1.0f);
-	translate[3][0] = x;
-	translate[3][1] = y;
-	translate[3][2] = z;
-
-	return translate;
-}
-
-void getTranslationValues(float& x, float& y, float& z, glm::mat4& translate) {
-	x = translate[3][0];
-	y = translate[3][1];
-	z = translate[3][2];
-}
-
-glm::mat4 createScaleMatrix(float x, float y, float z) {
-	glm::mat4 scale = glm::mat4(1.0f);
-	scale[0][0] = x;
-	scale[1][1] = y;
-	scale[2][2] = z;
-
-	return scale;
-}
-
-void getScaleValue(float& x, float& y, float& z, glm::mat4& scale) {
-	x = scale[0][0];
-	y = scale[1][1];
-	z = scale[2][2];
-}
-
-void FigureModMenu(Figure* cube) {
-	float x_trans, y_trans, z_trans;
-	getTranslationValues(x_trans, y_trans, z_trans, cube->translate);
-	ImGui::SliderFloat("Move X axis", &x_trans, -5.0f, 5.0f);
-	ImGui::SliderFloat("Move Y axis", &y_trans, -5.0f, 5.0f);
-	ImGui::SliderFloat("Move Z axis", &z_trans, -5.0f, 5.0f);
-	cube->translate = createTranslationMatrix(x_trans, y_trans, z_trans);
-	ImGui::Spacing();
-	float x_scale, y_scale, z_scale;
-	getScaleValue(x_scale, y_scale, z_scale, cube->scale);
-	ImGui::SliderFloat("Scale X axis", &x_scale, 0.0f, 5.0f);
-	ImGui::SliderFloat("Scale Y axis", &y_scale, 0.0f, 5.0f);
-	ImGui::SliderFloat("Scale Z axis", &z_scale, 0.0f, 5.0f);
-	cube->scale = createScaleMatrix(x_scale, y_scale, z_scale);
-	ImGui::Spacing();
-	float x_rot, y_rot, z_rot;
-	getRotateValue(x_rot, y_rot, z_rot, cube);
-	ImGui::SliderFloat("Rotate X axis", &x_rot, 0.0f, 6.5f);
-	ImGui::SliderFloat("Rotate Y axis", &y_rot, 0.0f, 6.5f);
-	ImGui::SliderFloat("Rotate Z axis", &z_rot, 0.0f, 6.5f);
-	cube->rotate = createRotationMatrix(x_rot, y_rot, z_rot, cube);
-	ImGui::Spacing();
-}
-
-void ModMenu(Cube* cube) {
-	FigureModMenu(cube);
-	float lengths[12];
-	char buff[100];
-	for (int i = 0; i < 12; i++) {
-		lengths[i] = cube->edges_lengts[i];
-		sprintf_s(buff, 100, "Length %d", i);
-		ImGui::SliderFloat(buff, &lengths[i], 0.0f, 5.0f);
-	}
-	bool difference = false;
-	int diff_index = 0;
-	for (int i = 0; i < 12; i++) {
-		if (cube->edges_lengts[i] != lengths[i]) {
-			difference = true;
-			diff_index = i;
-		}
-	}
-	if (difference) {
-		cube->ChangeEdgeLength(diff_index, lengths[diff_index]);
-	}
-}
-
-void ModMenu(Cone* cone) {
-	FigureModMenu(cone);
-	int longitude;
-	longitude = cone->longitude;
-
-	ImGui::Text("Number of divistions");
-	ImGui::SliderInt("Longitude", &longitude, 1, 100);
-	ImGui::Spacing();
-	float R, H;
-	R = cone->r;
-	H = cone->height;
-	ImGui::SliderFloat("Radius", &R, 0.01f, 10.0f);
-	ImGui::SliderFloat("Height", &H, 0.01f, 10.0f);
-
-	if (cone->height != H || cone->longitude != longitude || cone->r != R) {
-		cone->height = H;
-		cone->longitude = longitude;
-		cone->r = R;
-		cone->CalculateVerticesAndTriangles();
-	}
-}
-
-void ModMenu(Sphere* sphere) {
-	FigureModMenu(sphere);
-	int longitude, lattitude;
-	longitude = sphere->longitude;
-	lattitude = sphere->lattitude;
-
-	ImGui::Text("Number of divistions");
-	ImGui::SliderInt("Longitude", &longitude, 1, 100);
-	ImGui::SliderInt("Lattitude", &lattitude, 1, 100);
-	ImGui::Spacing();
-	float R;
-	R = sphere->r;
-	ImGui::SliderFloat("R", &R, 0.01f, 10.0f);
-
-	if (sphere->lattitude != lattitude || sphere->longitude != longitude || sphere->r != R) {
-		sphere->lattitude = lattitude;
-		sphere->longitude = longitude;
-		sphere->r = R;
-		sphere->CalculateVerticesAndTriangles();
-	}
-}
-
-void ModMenu(Cylinder* cone) {
-	FigureModMenu(cone);
-	int longitude;
-	longitude = cone->longitude;
-
-	ImGui::Text("Number of divistions");
-	ImGui::SliderInt("Longitude", &longitude, 1, 100);
-	ImGui::Spacing();
-	float R, H;
-	R = cone->r;
-	H = cone->height;
-	ImGui::SliderFloat("Radius", &R, 0.01f, 10.0f);
-	ImGui::SliderFloat("Height", &H, 0.01f, 10.0f);
-
-	if (cone->height != H || cone->longitude != longitude || cone->r != R) {
-		cone->height = H;
-		cone->longitude = longitude;
-		cone->r = R;
-		cone->CalculateVerticesAndTriangles();
-	}
-}
-
 void ListFigures(std::vector<Figure*>* figures) {
 	int counter = 0;
-	char buff[500];
+	
 	Figure* to_delete = nullptr;
 	for (auto fig : *figures) {
-		if (fig->type == Type::Cube_) {
-			sprintf_s(buff, 500, "Figure #%d : Cube", counter);
-			if (ImGui::TreeNode(buff)) {
-				ModMenu(dynamic_cast<Cube*>(fig));
-				if (ImGui::Button("Delete"))
-					to_delete = fig;
-				ImGui::TreePop();
-				ImGui::Separator();
-			}
-		}
-		if (fig->type == Type::Cone_) {
-			sprintf_s(buff, 500, "Figure #%d : Cone", counter);
-			if (ImGui::TreeNode(buff)) {
-				ModMenu(dynamic_cast<Cone*>(fig));
-				if (ImGui::Button("Delete"))
-					to_delete = fig;
-				ImGui::TreePop();
-				ImGui::Separator();
-			}
-		}
-		if (fig->type == Type::Sphere_) {
-			sprintf_s(buff, 500, "Figure #%d : Sphere", counter);
-			if (ImGui::TreeNode(buff)) {
-				ModMenu(dynamic_cast<Sphere*>(fig));
-				if (ImGui::Button("Delete"))
-					to_delete = fig;
-				ImGui::TreePop();
-				ImGui::Separator();
-			}
-		}
-		if (fig->type == Type::Cylinder_) {
-			sprintf_s(buff, 500, "Figure #%d : Cylinder", counter);
-			if (ImGui::TreeNode(buff)) {
-				ModMenu(dynamic_cast<Cylinder*>(fig));
-				if (ImGui::Button("Delete"))
-					to_delete = fig;
-				ImGui::TreePop();
-				ImGui::Separator();
-			}
-		}
+		fig->ModMenu(counter, to_delete);
 		counter++;
 	}
 	if (to_delete != nullptr) {
@@ -408,27 +203,27 @@ void CreateMenu(std::vector<Figure*>* figures, std::vector<Camera*>* cameras) {
 		if (ImGui::Button("Add Cube"))// Buttons return true when clicked (most widgets return true when edited/activated)
 		{
 			Cube* tmp = new Cube();
-			tmp->center = createTranslationMatrix(-0.5f, -0.5f, -0.5f);
-			tmp->scale = createScaleMatrix(0.2f, 0.2f, 0.2f);
+			tmp->center = Helper::createTranslationMatrix(-0.5f, -0.5f, -0.5f);
+			tmp->scale = Helper::createScaleMatrix(0.2f, 0.2f, 0.2f);
 			figures->push_back(tmp);
 		}
 		if (ImGui::Button("Add Sphere"))// Buttons return true when clicked (most widgets return true when edited/activated)
 		{
 			Sphere* tmp = new Sphere();
-			tmp->scale = createScaleMatrix(0.2f, 0.2f, 0.2f);
+			tmp->scale = Helper::createScaleMatrix(0.2f, 0.2f, 0.2f);
 			figures->push_back(tmp);
 
 		}
 		if (ImGui::Button("Add Cone"))// Buttons return true when clicked (most widgets return true when edited/activated)
 		{
 			Cone* tmp = new Cone();
-			tmp->scale = createScaleMatrix(0.2f, 0.2f, 0.2f);
+			tmp->scale = Helper::createScaleMatrix(0.2f, 0.2f, 0.2f);
 			figures->push_back(tmp);
 		}
 		if (ImGui::Button("Add Cylinder"))// Buttons return true when clicked (most widgets return true when edited/activated)
 		{
 			Cylinder* tmp = new Cylinder();
-			tmp->scale = createScaleMatrix(0.2f, 0.2f, 0.2f);
+			tmp->scale = Helper::createScaleMatrix(0.2f, 0.2f, 0.2f);
 			figures->push_back(tmp);
 		}
 
@@ -516,18 +311,18 @@ int main(int, char**)
 	Cylinder cy = Cylinder();
 	Cone co = Cone();
 
-	cub.center = createTranslationMatrix(-0.5f, -0.5f, -0.5f);
-	cub.scale = createScaleMatrix(0.2f, 0.2f, 0.2f);
-	cub.translate = createTranslationMatrix(1.0f, 0, 0);
-	cub2.translate = createTranslationMatrix(-1.0f, 0, 0);
-	cub2.center = createTranslationMatrix(-0.5f, -0.5f, -0.5f);;
-	cub2.scale = createScaleMatrix(0.2f, 0.2f, 0.2f);
+	cub.center = Helper::createTranslationMatrix(-0.5f, -0.5f, -0.5f);
+	cub.scale = Helper::createScaleMatrix(0.2f, 0.2f, 0.2f);
+	cub.translate = Helper::createTranslationMatrix(1.0f, 0, 0);
+	cub2.translate = Helper::createTranslationMatrix(-1.0f, 0, 0);
+	cub2.center = Helper::createTranslationMatrix(-0.5f, -0.5f, -0.5f);;
+	cub2.scale = Helper::createScaleMatrix(0.2f, 0.2f, 0.2f);
 
-	sp.scale = createScaleMatrix(0.1f, 0.1f, 0.1f);
-	cy.scale = createScaleMatrix(0.1f, 0.1f, 0.1f);
-	co.scale = createScaleMatrix(0.1f, 0.1f, 0.1f);
+	sp.scale = Helper::createScaleMatrix(0.1f, 0.1f, 0.1f);
+	cy.scale = Helper::createScaleMatrix(0.1f, 0.1f, 0.1f);
+	co.scale = Helper::createScaleMatrix(0.1f, 0.1f, 0.1f);
 
-	cub2.translate = createTranslationMatrix(-3.0f, 0, 0);
+	cub2.translate = Helper::createTranslationMatrix(-3.0f, 0, 0);
 
 
 	//figures.push_back(&cub);
@@ -582,7 +377,7 @@ int main(int, char**)
 		auto view = cam->GetWorldMatrix();
 		auto view_port = cam->GetViewPortMatrix();
 
-		cub.rotate = createRotationMatrix(0, -alfa, 0, &cub);
+		cub.rotate = Helper::createRotationMatrix(0, -alfa, 0, &cub);
 		int color;
 		for (auto fig : figures) {
 			fig->Transform(proj, view, view_port);
@@ -594,33 +389,6 @@ int main(int, char**)
 				//t.CalculateNormalVectors();
 				t.CalculatePointsAfterTransformation();
 				t.DrawTriangle(backface_culling, paint_triangles, z_bufferng, perspective_correction, fb, color,cam);
-				/*auto tmp = t.after_transformations[0];
-				auto tmp2 = t.after_transformations[1];
-				auto tmp3 = t.after_transformations[2];
-				float val = 1.0f;
-				if(backface_culling)
-					val = t.CalculateSideValue();
-				if (val <= 0) {
-					if (paint_triangles)
-					{
-						if(z_bufferng)
-						fb.FillTriangle(tmp.x, tmp.y, tmp.z, tmp2.x, tmp2.y, tmp2.z, tmp3.x, tmp3.y, tmp3.z, color);
-						else
-							fb.FillTriangle(tmp.x, tmp.y, tmp2.x, tmp2.y, tmp3.x, tmp3.y, color);
-
-					}
-					if (z_bufferng) {
-						fb.DrawLine(tmp.x, tmp.y, tmp.z, tmp2.x, tmp2.y, tmp2.z, RGB(255, 0, 0));
-						fb.DrawLine(tmp2.x, tmp2.y, tmp2.z, tmp3.x, tmp3.y, tmp3.z, RGB(255, 0, 0));
-						fb.DrawLine(tmp3.x, tmp3.y, tmp3.z, tmp.x, tmp.y, tmp.z, RGB(255, 0, 0));
-					}
-					else
-					{
-						fb.DrawLine(tmp.x, tmp.y,  tmp2.x, tmp2.y, RGB(255, 0, 0));
-						fb.DrawLine(tmp2.x, tmp2.y,  tmp3.x, tmp3.y, RGB(255, 0, 0));
-						fb.DrawLine(tmp3.x, tmp3.y,  tmp.x, tmp.y, RGB(255, 0, 0));
-					}
-				}*/
 			}
 		}
 

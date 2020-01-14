@@ -5,10 +5,11 @@
 #include <vector>
 #include "FrameBuffer.h"
 #include "Camera.h"
+#include "../Figure.h"
 #define _USE_MATH_DEFINES
 
 #include <math.h>
-#include "Figure.h"
+class Figure;
 
 class Triangle {
 public:

@@ -5,13 +5,12 @@
 #include <vector>
 #include "FrameBuffer.h"
 #include "Camera.h"
-#include "Triangle.h"
+#include "../Triangle.h"
 #define _USE_MATH_DEFINES
 
 #include <math.h>
 
-class Figure;
-
+class Triangle;
 enum Type {
 	Cube_,
 	Sphere_,
@@ -38,7 +37,8 @@ public:
 	float y_angle = 0.0f;
 	float z_angle = 0.0f;
 
-	virtual void CalculateNormalVectors(unsigned int first, unsigned int second, unsigned int third, Triangle* tri) = 0;
 
+	virtual void ModMenu(int counter, Figure*& to_delete);
+	virtual void CalculateNormalVectors(unsigned int first, unsigned int second, unsigned int third, Triangle* tri) = 0;
 	void Transform(glm::mat4 proj, glm::mat4 view,glm::mat4 view_port);
 };

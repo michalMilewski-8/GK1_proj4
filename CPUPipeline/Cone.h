@@ -8,7 +8,8 @@
 #define _USE_MATH_DEFINES
 
 #include <math.h>
-#include "Figure.h"
+#include "../Figure.h"
+#include "../Triangle.h"
 
 class Cone : public Figure {
 public:
@@ -17,7 +18,8 @@ public:
 	float r;
 
 	Cone();
-	void CalculateVerticesAndTriangles();
-	void CalculateNormalVectors(unsigned int first, unsigned int second, unsigned int third, Triangle* tri);
+	void ModMenu(int counter, Figure*& to_delete) override;
+	void CalculateVerticesAndTriangles() ;
+	void CalculateNormalVectors(unsigned int first, unsigned int second, unsigned int third, Triangle* tri) override;
 
 };
