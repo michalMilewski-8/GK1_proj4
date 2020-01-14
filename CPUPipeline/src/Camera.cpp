@@ -40,7 +40,7 @@ void Camera::SetViewport(float offset_x, float offset_y, float screen_width, flo
 
 	glm::mat4 scale = glm::mat4(1.0f);
 	scale[0][0] = screen_width / 2;
-	scale[1][1] = -screen_height / 2;
+	scale[1][1] = screen_height / 2;
 	scale[2][2] = 1.0f / 2;
 
 	m_viewport_matrix = trans * scale;

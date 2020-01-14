@@ -11,7 +11,10 @@ FrameBuffer::FrameBuffer(int _w, int _h)
 	:m_width(_w), m_height(_h)
 {
 	m_color_buffer = new uint8_t[m_width * m_height * m_bytesPerPixel];
-	m_depth_buffor = new float[m_width * m_height]{ 10.0f };
+	m_depth_buffor = new float[m_width * m_height];
+	for (int i = 0; i < m_width * m_height; i++) {
+		m_depth_buffor[i] = 2.0f;
+	}
 }
 
 FrameBuffer::~FrameBuffer()
@@ -67,7 +70,10 @@ void FrameBuffer::Resize(int _w, int _h)
 	m_width = _w;
 	m_height = _h;
 	m_color_buffer = new uint8_t[m_width * m_height * m_bytesPerPixel];
-	m_depth_buffor = new float[m_width * m_height]{ 10.0f };
+	m_depth_buffor = new float[m_width * m_height];
+	for (int i = 0; i < m_width * m_height; i++) {
+		m_depth_buffor[i] = 2.0f;
+	}
 }
 
 void FrameBuffer::ClearColor(float red, float green, float blue)
@@ -89,7 +95,10 @@ void FrameBuffer::RenderGL()
 {
 	if (m_depth_buffor)
 		delete[] m_depth_buffor;
-	m_depth_buffor = new float[m_width * m_height]{ 10.0f };
+	m_depth_buffor = new float[m_width * m_height];
+	for (int i = 0; i < m_width * m_height; i++) {
+		m_depth_buffor[i] = 2.0f;
+	}
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, tex);
 
@@ -127,8 +136,8 @@ void FrameBuffer::SetPixel(int x, int y, float z, int color)
 
 	int dep = y * m_width + x;
 	int idx = m_bytesPerPixel * (y * m_width + x);
-	z *= -1;
-	if (z > m_depth_buffor[dep]) {
+	//z *= -1;
+	if (z < m_depth_buffor[dep]) {
 		m_depth_buffor[dep] = z;
 		m_color_buffer[idx] = RED(color);
 		m_color_buffer[idx + 1] = GREEN(color);

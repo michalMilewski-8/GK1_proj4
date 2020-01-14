@@ -27,20 +27,20 @@ Triangle::Triangle(unsigned int first, unsigned int second, unsigned int third, 
 
 float CalculateDist(glm::vec4 v, int i) {
 	switch (i) {
-	case 1: return v.w - v.x;
+	case 1: return v.w + v.x;
 		break;
-	case 2: return v.w + v.x;
+	case 2: return v.w - v.x;
 		break;
-	case 3: return v.w - v.y;
+	case 3: return v.w + v.y;
 		break;
-	case 4: return v.w + v.y;
+	case 4: return v.w - v.y;
 		break;
-	case 5: return v.w - v.z;
+	case 5: return v.w + v.z;
 		break;
-	case 6: return v.w + v.z;
+	case 6: return v.w - v.z;
 		break;
 	default:
-		return -1;
+		return 1;
 		break;
 	}
 }
@@ -54,10 +54,11 @@ void Triangle::DrawTriangle(bool backface_culling, bool paint_triangles, bool z_
 		std::vector<glm::vec4> points;
 		bool add = true;
 		for (int i = 0; i < 3; i++) {
-			glm::vec4 A = after_transformations[i % 3];
-			glm::vec4 B = after_transformations[(i + 1) % 3];
-			add = true;
+			glm::vec4 A = before_last_transformations[i % 3];
+			glm::vec4 B = before_last_transformations[(i + 1) % 3];
+			
 			for (int j = 1; j <= 6; j++) {
+				add = true;
 				float da = CalculateDist(A, j);
 				float db = CalculateDist(B, j);
 				if (da < 0 && db < 0) {
@@ -71,23 +72,33 @@ void Triangle::DrawTriangle(bool backface_culling, bool paint_triangles, bool z_
 				if (db < 0) {
 					B = A * (1 - dc) + B * dc;
 				}
-
 			}
 			if (add) {
-				if(i==0)
+
 				points.push_back(A);
+				if(i!=2)
 				points.push_back(B);
 			}
 		}
+
+		points.erase(std::unique(points.begin(), points.end()), points.end());
 	
 		for (int k = 1; k < ((int)points.size() - 1); k++) {
 			auto tmp_ = points[0] / points[0].w;
 			auto tmp2_ = points[k] / points[k].w;
 			auto tmp3_ = points[k + 1] / points[k + 1].w;
 
-			auto tmp = tmp_ * cam->GetViewPortMAtrix();
-			auto tmp2 = tmp2_ * cam->GetViewPortMAtrix();
-			auto tmp3 = tmp3_ * cam->GetViewPortMAtrix();
+			//auto tmp_ = points[0] ;
+			//auto tmp2_ = points[k];
+			//auto tmp3_ = points[k + 1] ;
+
+			auto tmp =  cam->GetViewPortMatrix() * tmp_;
+			auto tmp2 = cam->GetViewPortMatrix() * tmp2_;
+			auto tmp3 = cam->GetViewPortMatrix() * tmp3_;
+
+			//tmp /= tmp.w;
+			//tmp2 /= tmp2.w;
+			//tmp3 /= tmp3.w;
 			//auto tmp = points[0] / points[0].w;
 			//auto tmp2 = points[k] / points[k].w;
 			//auto tmp3 = points[k + 1] / points[k + 1].w;
@@ -122,6 +133,10 @@ void Triangle::CalculatePointsAfterTransformation() {
  fig->transformation * fig->vertices[vertices_ind[1]],
 fig->transformation * fig->vertices[vertices_ind[2]] };
 
+	before_last_transformations = { fig->trans_without_viewport * fig->vertices[vertices_ind[0]],
+ fig->trans_without_viewport* fig->vertices[vertices_ind[1]],
+fig->trans_without_viewport* fig->vertices[vertices_ind[2]] };
+
 	//	transformed_normal_vectors = { fig->transformation * normal_vectors[0],
 	// fig->transformation * normal_vectors[1],
 	//fig->transformation * normal_vectors[2] };
@@ -151,8 +166,9 @@ fig->transformation * fig->vertices[vertices_ind[2]] };
 	after_transformations[2] /= after_transformations[2].w;
 }
 
-void Figure::Transform(glm::mat4 proj, glm::mat4 view) {
-	transformation = proj * view * scale * translate * rotate * center;
+void Figure::Transform(glm::mat4 proj, glm::mat4 view, glm::mat4 view_port) {
+	transformation = view_port * proj * view * scale * translate * rotate * center;
+	trans_without_viewport = proj * view * scale * translate * rotate * center;
 }
 
 Cube::Cube(std::vector<glm::vec4> vert)

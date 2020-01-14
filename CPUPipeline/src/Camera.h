@@ -8,8 +8,8 @@ public:
 	~Camera() = default;
 
 	glm::mat4 GetWorldMatrix() const { return m_world_matrix; }
-	glm::mat4 GetProjectionMatrix() const { return m_viewport_matrix * m_projection_matrix; };
-	glm::mat4 GetViewPortMAtrix() const { return m_viewport_matrix; };
+	glm::mat4 GetProjectionMatrix() const { return m_projection_matrix; };
+	glm::mat4 GetViewPortMatrix() const { return m_viewport_matrix; };
 
 	void SetOrthographic(float left, float right, float top, float bottom, float near, float far);
 	void SetFrustum(float left, float right, float top, float bottom, float near, float far);
