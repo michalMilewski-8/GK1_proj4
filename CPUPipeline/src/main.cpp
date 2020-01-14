@@ -573,7 +573,7 @@ int main(int, char**)
 
 		//write your render pipeline here
 		cam->LookAt(cameraPos, cameraFront, cameraUp);
-		cam->SetPerspective(fov, ((float)current_height / (float)current_width), 1, 5);
+		cam->SetPerspective(fov, ((float)current_height / (float)current_width), 0, 5);
 		cam = cameras[active_camera_index];
 		cam->SetPosFrontUp(cameraPos, cameraFront, cameraUp);
 		//TODO: get MVP matrix

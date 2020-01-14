@@ -53,6 +53,7 @@ void Triangle::DrawTriangle(bool backface_culling, bool paint_triangles, bool z_
 	if (val >= 0) {
 		std::vector<glm::vec4> points;
 		bool add = true;
+		bool all = true;
 		for (int i = 0; i < 3; i++) {
 			glm::vec4 A = after_transformations[i % 3];
 			glm::vec4 B = after_transformations[(i + 1) % 3];
@@ -60,15 +61,19 @@ void Triangle::DrawTriangle(bool backface_culling, bool paint_triangles, bool z_
 			for (int j = 1; j <= 6; j++) {
 				float da = CalculateDist(A, j);
 				float db = CalculateDist(B, j);
+
 				if (da < 0 && db < 0) {
 					add = false;
+					all = false;
 					break;
 				}
 				float dc = da / (da - db);
 				if (da < 0) {
+					all = false;
 					A = A * (1 - dc) + B * dc;
 				}
 				if (db < 0) {
+					all = false;
 					B = A * (1 - dc) + B * dc;
 				}
 				
@@ -78,6 +83,8 @@ void Triangle::DrawTriangle(bool backface_culling, bool paint_triangles, bool z_
 				points.push_back(B);
 			}
 		}
+
+		points.erase(std::unique(points.begin(), points.end()), points.end());
 	
 		for (int k = 1; k < ((int)points.size() - 1); k++) 
 		{

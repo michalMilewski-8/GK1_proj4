@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
+#include <set>
 #include "FrameBuffer.h"
 #include "Camera.h"
 #define _USE_MATH_DEFINES
