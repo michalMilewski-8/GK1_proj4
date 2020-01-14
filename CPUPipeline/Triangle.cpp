@@ -51,6 +51,7 @@ void Triangle::DrawTriangle(bool backface_culling, bool paint_triangles, bool z_
 	if (backface_culling)
 		val = CalculateSideValue();
 	if (val >= 0) {
+		std::vector<glm::vec4> points_to;
 		std::vector<glm::vec4> points;
 		bool add = true;
 		for (int i = 0; i < 3; i++) {
@@ -75,55 +76,59 @@ void Triangle::DrawTriangle(bool backface_culling, bool paint_triangles, bool z_
 			}
 			if (add) {
 
-				points.push_back(A);
+				points_to.push_back(A);
 				if (i != 2)
-					points.push_back(B);
+					points_to.push_back(B);
 			}
 		}
 
-		points.erase(std::unique(points.begin(), points.end()), points.end());
+		points_to.erase(std::unique(points_to.begin(), points_to.end()), points_to.end());
+		if (points_to.size() > 0) {
+			auto D = points_to[0];
+			std::sort(points_to.begin()++, points_to.end(), [D](glm::vec4 a, glm::vec4 b) {return glm::length(a - D) > glm::length(b - D); });
+			points = points_to;
+				for (int k = 1; k < ((int)points.size() - 1); k++) {
+					auto tmp_ = points[0] / points[0].w;
+					auto tmp2_ = points[k] / points[k].w;
+					auto tmp3_ = points[k + 1] / points[k + 1].w;
 
-		for (int k = 1; k < ((int)points.size() - 1); k++) {
-			auto tmp_ = points[0] / points[0].w;
-			auto tmp2_ = points[k] / points[k].w;
-			auto tmp3_ = points[k + 1] / points[k + 1].w;
+					//auto tmp_ = points[0] ;
+					//auto tmp2_ = points[k];
+					//auto tmp3_ = points[k + 1] ;
 
-			//auto tmp_ = points[0] ;
-			//auto tmp2_ = points[k];
-			//auto tmp3_ = points[k + 1] ;
+					auto tmp = cam->GetViewPortMatrix() * tmp_;
+					auto tmp2 = cam->GetViewPortMatrix() * tmp2_;
+					auto tmp3 = cam->GetViewPortMatrix() * tmp3_;
 
-			auto tmp = cam->GetViewPortMatrix() * tmp_;
-			auto tmp2 = cam->GetViewPortMatrix() * tmp2_;
-			auto tmp3 = cam->GetViewPortMatrix() * tmp3_;
-
-			//tmp /= tmp.w;
-			//tmp2 /= tmp2.w;
-			//tmp3 /= tmp3.w;
-			//auto tmp = points[0] / points[0].w;
-			//auto tmp2 = points[k] / points[k].w;
-			//auto tmp3 = points[k + 1] / points[k + 1].w;
+					//tmp /= tmp.w;
+					//tmp2 /= tmp2.w;
+					//tmp3 /= tmp3.w;
+					//auto tmp = points[0] / points[0].w;
+					//auto tmp2 = points[k] / points[k].w;
+					//auto tmp3 = points[k + 1] / points[k + 1].w;
 
 
-			if (paint_triangles)
-			{
-				if (z_bufferng)
-					fb.FillTriangle(tmp.x, tmp.y, tmp.z, tmp2.x, tmp2.y, tmp2.z, tmp3.x, tmp3.y, tmp3.z, color);
-				else
-					fb.FillTriangle(tmp.x, tmp.y, tmp2.x, tmp2.y, tmp3.x, tmp3.y, color);
+					if (paint_triangles)
+					{
+						if (z_bufferng)
+							fb.FillTriangle(tmp.x, tmp.y, tmp.z, tmp2.x, tmp2.y, tmp2.z, tmp3.x, tmp3.y, tmp3.z, color);
+						else
+							fb.FillTriangle(tmp.x, tmp.y, tmp2.x, tmp2.y, tmp3.x, tmp3.y, color);
 
-			}
-			if (z_bufferng) {
-				fb.DrawLine(tmp.x, tmp.y, tmp.z, tmp2.x, tmp2.y, tmp2.z, RGB(255, 0, 0));
-				fb.DrawLine(tmp2.x, tmp2.y, tmp2.z, tmp3.x, tmp3.y, tmp3.z, RGB(255, 0, 0));
-				fb.DrawLine(tmp3.x, tmp3.y, tmp3.z, tmp.x, tmp.y, tmp.z, RGB(255, 0, 0));
-			}
-			else
-			{
-				fb.DrawLine(tmp.x, tmp.y, tmp2.x, tmp2.y, RGB(255, 0, 0));
-				fb.DrawLine(tmp2.x, tmp2.y, tmp3.x, tmp3.y, RGB(255, 0, 0));
-				fb.DrawLine(tmp3.x, tmp3.y, tmp.x, tmp.y, RGB(255, 0, 0));
-			}
+					}
+					if (z_bufferng) {
+						fb.DrawLine(tmp.x, tmp.y, tmp.z, tmp2.x, tmp2.y, tmp2.z, RGB(255, 0, 0));
+						fb.DrawLine(tmp2.x, tmp2.y, tmp2.z, tmp3.x, tmp3.y, tmp3.z, RGB(255, 0, 0));
+						fb.DrawLine(tmp3.x, tmp3.y, tmp3.z, tmp.x, tmp.y, tmp.z, RGB(255, 0, 0));
+					}
+					else
+					{
+						fb.DrawLine(tmp.x, tmp.y, tmp2.x, tmp2.y, RGB(255, 0, 0));
+						fb.DrawLine(tmp2.x, tmp2.y, tmp3.x, tmp3.y, RGB(255, 0, 0));
+						fb.DrawLine(tmp3.x, tmp3.y, tmp.x, tmp.y, RGB(255, 0, 0));
+					}
 
+				}
 		}
 	}
 }
