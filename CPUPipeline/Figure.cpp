@@ -25,9 +25,16 @@ void Figure::ModMenu(int counter, Figure*& to_delete)
 	ImGui::SliderFloat("Rotate Z axis", &z_rot, 0.0f, 6.5f);
 	this->rotate = Helper::createRotationMatrix(x_rot, y_rot, z_rot, this);
 	ImGui::Spacing();
+	ImGui::Text("Lighting parameters");
+	ImGui::SliderFloat("ks", &ks, 0.0f, 1.0f);
+	ImGui::SliderFloat("kd", &kd, 0.0f, 1.0f);
+	ImGui::SliderInt("n", &n, 0, 20);
+	ImGui::Spacing();
 }
 
 void Figure::Transform(glm::mat4 proj, glm::mat4 view, glm::mat4 view_port) {
 	transformation = view_port * proj * view * scale * translate * rotate * center;
 	trans_without_viewport = proj * view * scale * translate * rotate * center;
+	model_matrix = scale * translate * rotate * center;
+	re_model_matrix = glm::inverse(glm::transpose(model_matrix));
 }

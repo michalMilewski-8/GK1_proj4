@@ -70,26 +70,26 @@ void Cube::CalculateNormalVectors(unsigned int first, unsigned int second, unsig
 
 	glm::vec3 one_ = (two - one);
 	glm::vec3 two_ = (three - one);
-	auto tmp = glm::cross(two_, one_);
+	auto tmp = glm::cross(one_, two_);
 	tri->normal_vectors.push_back(glm::vec4(tmp.x, tmp.y, tmp.z, 1));
 
 	one_ = (three - two);
 	two_ = (one - two);
-	tmp = glm::cross(two_, one_);
+	tmp = glm::cross(one_, two_);
 	tri->normal_vectors.push_back(glm::vec4(tmp.x, tmp.y, tmp.z, 1));
 
 	one_ = (one - three);
 	two_ = (two - three);
-	tmp = glm::cross(two_, one_);
+	tmp = glm::cross(one_, two_);
 	tri->normal_vectors.push_back(glm::vec4(tmp.x, tmp.y, tmp.z, 1));
 
-	tri->tangential_vectors.push_back(tri->normal_vectors[1]);
-	tri->tangential_vectors.push_back(tri->normal_vectors[2]);
-	tri->tangential_vectors.push_back(tri->normal_vectors[0]);
+	//tri->tangential_vectors.push_back(tri->normal_vectors[1]);
+	//tri->tangential_vectors.push_back(tri->normal_vectors[2]);
+	//tri->tangential_vectors.push_back(tri->normal_vectors[0]);
 
-	tri->binormal_vectors.push_back(tri->normal_vectors[2]);
-	tri->binormal_vectors.push_back(tri->normal_vectors[0]);
-	tri->binormal_vectors.push_back(tri->normal_vectors[1]);
+	//tri->binormal_vectors.push_back(tri->normal_vectors[2]);
+	//tri->binormal_vectors.push_back(tri->normal_vectors[0]);
+	//tri->binormal_vectors.push_back(tri->normal_vectors[1]);
 }
 
 void Cube::CalculateEdgesLengths()

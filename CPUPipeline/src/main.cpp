@@ -25,7 +25,7 @@ glm::vec3 cameraPos, cameraFront, cameraUp;
 glm::vec3 def_cameraPos, def_cameraFront, def_cameraUp;
 float fov = 30.f;
 glm::vec2 mousePosOld;
-glm::vec2 angle = glm::vec2(0, 0);
+glm::vec2 angle = glm::vec2(-M_PI / 2,0 );
 glm::vec2 scroolPosOld;
 Camera* camera = nullptr;
 bool show_demo_window = false;
@@ -35,10 +35,13 @@ int active_camera_index = -1;
 int current_width = DEFAULT_WIDTH;
 int current_height = DEFAULT_HEIGHT;
 bool paint_triangles = true;
+bool draw_edges = true;
+bool draw_color = true;
 bool perspective_correction = false;
 bool backface_culling = true;
 bool z_bufferng = true;
-
+Camera* cam;
+FrameBuffer* fram;
 
 
 static void glfw_error_callback(int error, const char* description)
@@ -68,21 +71,16 @@ void processInput(GLFWwindow* window, float deltaTime)
 
 	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
 		cameraPos.y += 0.01;
-
-
-	//TODO: Write camera input control here
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
-	//TODO: change camera viewport
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	glm::vec2 mousePos = { xpos,ypos };
-
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
 	{
 		glm::vec2 diff = mousePos - mousePosOld;
@@ -95,20 +93,12 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	}
 
 	mousePosOld = mousePos;
-	//TODO: write mouse camera control
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	//glm::vec2 scroolPos = { xoffset,yoffset };
-
-	//glm::vec2 diff = scroolPos - scroolPosOld;
-	if(fov >=0.0f || yoffset >=0)
-	fov += yoffset / 10;
-	//cameraUp.y += diff.y / 100;
-
-	//scroolPosOld = scroolPos;
-	//TODO: mouse scroll
+	if (fov >= 0.0f || yoffset >= 0)
+		fov += yoffset / 10;
 }
 
 void timeMeasurement(GLFWwindow* win, double& deltaTime, double& currentTime)
@@ -136,7 +126,7 @@ void timeMeasurement(GLFWwindow* win, double& deltaTime, double& currentTime)
 
 void ListFigures(std::vector<Figure*>* figures) {
 	int counter = 0;
-	
+
 	Figure* to_delete = nullptr;
 	for (auto fig : *figures) {
 		fig->ModMenu(counter, to_delete);
@@ -168,13 +158,53 @@ void ListCameras(std::vector<Camera*>* cameras) {
 	}
 }
 
+void ListLights(std::vector<Light*>* lights) {
+	char buff[500];
+	int to_delete = -1;
+	for (int i = 0; i < lights->size(); i++) {
+		sprintf_s(buff, 500, "Light #%d", i);
+		if (ImGui::TreeNode(buff)) {
+			Light* li = (*lights)[i];
+			if (ImGui::Button("Delete")) to_delete = i;
+			ImGui::Separator();
+			ImGui::Text("Position");
+			ImGui::SliderFloat("X position",&(li->position.x),-5.0f,5.0f);
+			ImGui::SliderFloat("Y position",&(li->position.y),-5.0f,5.0f);
+			ImGui::SliderFloat("Z position",&(li->position.z),-5.0f,5.0f);
+			ImGui::Separator();
+			ImGui::Text("Attenuation");
+			ImGui::SliderFloat("Ac", &(li->Ac), 0.0f, 1.0f);
+			ImGui::SliderFloat("Al", &(li->Al), 0.0f, 1.0f);
+			ImGui::SliderFloat("Aq", &(li->Aq), 0.0f, 1.0f);
+			ImGui::Separator();
+			ImGui::Text("Colors");
+			float colord[3];
+			float colors[3];
+			colord[0] = li->Id.x;
+			colord[1] = li->Id.y;
+			colord[2] = li->Id.z;
+			colors[0] = li->Is.x;
+			colors[1] = li->Is.y;
+			colors[2] = li->Is.z;
+			ImGui::ColorEdit3("Id", colord);
+			li->Id = { colord[0],colord[1],colord[2] };
+			ImGui::ColorEdit3("Is", colors);
+			li->Is = { colors[0],colors[1],colors[2] };
+			ImGui::TreePop();
+			ImGui::Separator();
+		}
+	}
+	if (to_delete >= 0) {
+		//delete (*cameras)[cam_to_delete];
+		lights->erase(lights->begin() + to_delete);
+	}
+}
 
 
-void CreateMenu(std::vector<Figure*>* figures, std::vector<Camera*>* cameras) {
-	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
+
+void CreateMenu(std::vector<Figure*>* figures, std::vector<Camera*>* cameras, std::vector<Light*>* lights) {
 	if (show_demo_window)
 		ImGui::ShowDemoWindow(&show_demo_window);
-
 	{
 		static float f = 0.0f;
 		static int counter = 0;
@@ -187,6 +217,16 @@ void CreateMenu(std::vector<Figure*>* figures, std::vector<Camera*>* cameras) {
 		ImGui::Checkbox("Correct perspective", &perspective_correction);
 		ImGui::Checkbox("Backface culling", &backface_culling);
 		ImGui::Checkbox("Z-buffering", &z_bufferng);
+		ImGui::Checkbox("Draw Lights", &draw_color);
+		ImGui::Checkbox("Draw Edges", &draw_edges);
+		ImGui::Text("Ambient Light");
+		ImGui::SliderFloat("ka", &(fram->ka), 0.0f, 1.0f);
+		float colora[3];
+		colora[0] = fram->Ia.x;
+		colora[1] = fram->Ia.y;
+		colora[2] = fram->Ia.z;
+		ImGui::ColorEdit3("Ia", colora);
+		fram->Ia = { colora[0],colora[1],colora[2] };
 		if (ImGui::CollapsingHeader("List Figures")) {
 			ListFigures(figures);
 		}
@@ -194,11 +234,8 @@ void CreateMenu(std::vector<Figure*>* figures, std::vector<Camera*>* cameras) {
 			ListCameras(cameras);
 		}
 		if (ImGui::CollapsingHeader("List Lights")) {
-
+			ListLights(lights);
 		}
-
-		//ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-		//ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
 		if (ImGui::Button("Add Cube"))// Buttons return true when clicked (most widgets return true when edited/activated)
 		{
@@ -234,8 +271,12 @@ void CreateMenu(std::vector<Figure*>* figures, std::vector<Camera*>* cameras) {
 			cam->SetPerspective(fov, ((float)current_height / (float)current_width), 1, 100);
 			cameras->push_back(cam);
 		}
-		//ImGui::SameLine();
-		//ImGui::Text("counter = %d", counter);
+
+		if (ImGui::Button("Add Light"))// Buttons return true when clicked (most widgets return true when edited/activated)
+		{
+			Light* light = new Light();
+			lights->push_back(light);
+		}
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::End();
@@ -243,6 +284,14 @@ void CreateMenu(std::vector<Figure*>* figures, std::vector<Camera*>* cameras) {
 
 }
 
+
+void window_size_callback(GLFWwindow* window, int width, int height) {
+	current_width = width;
+	current_height = height;
+	fram->Resize(width, height);
+	fram->InitGL();
+	cam->SetViewport(0, 0, current_width, current_height);
+}
 
 int main(int, char**)
 {
@@ -277,12 +326,13 @@ int main(int, char**)
 
 	// Set callback for resizing window
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
+	glfwSetWindowSizeCallback(window, window_size_callback);
 	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 
 	FrameBuffer fb(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+	fram = &fb;
 	fb.InitGL();
 
 
@@ -303,6 +353,7 @@ int main(int, char**)
 	std::vector<Camera*> cameras;
 
 	std::vector<Figure*> figures;
+	std::vector<Light*> lights;
 
 	Cube cub = Cube();
 	Cube cub2 = Cube();
@@ -342,53 +393,53 @@ int main(int, char**)
 	double deltaTime = 0.0;
 	double currentTime = 0.0;
 
-	Camera* cam = new Camera(cameraPos, cameraFront, cameraUp);
+	cam = new Camera(cameraPos, cameraFront, cameraUp);
 	cam->SetViewport(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
 	cam->SetPerspective(fov, ((float)DEFAULT_HEIGHT / (float)DEFAULT_WIDTH), 1, 100);
-
 	cameras.push_back(cam);
 	active_camera_index = 0;
-	double alfa = 0.0;
 
+	Light* li = new Light();
+	li->position = { 0.0f,0.0f,2.0f };
+	li->Ac = 1;
+	li->Al = 0.09f;
+	li->Aq = 0.032f;
+	li->Id = { 1,1,1 };
+	li->Is = { 1,1,1 };
+
+	lights.push_back(li);
+
+	double alfa = 0.0;
+	fb.lights = &lights;
 	// Main loop
 	while (!glfwWindowShouldClose(window))
 	{
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-		CreateMenu(&figures, &cameras);
+		CreateMenu(&figures, &cameras, &lights);
 		alfa += 0.03;
 		glfwPollEvents();
 		timeMeasurement(window, deltaTime, currentTime);
 		processInput(window, deltaTime);
 
-		// Update scene
-		//fb.ClearColor(0.5f, 0.5f, 1.0f);
 		fb.ClearColor(0.1f, 0.15f, 0.15f);
 
-		//write your render pipeline here
 		cam->LookAt(cameraPos, cameraFront, cameraUp);
 		cam->SetPerspective(fov, ((float)current_height / (float)current_width), 1, 5);
 		cam = cameras[active_camera_index];
 		cam->SetPosFrontUp(cameraPos, cameraFront, cameraUp);
-		//TODO: get MVP matrix
 
 		auto proj = cam->GetProjectionMatrix();
 		auto view = cam->GetWorldMatrix();
 		auto view_port = cam->GetViewPortMatrix();
 
-		cub.rotate = Helper::createRotationMatrix(0, -alfa, 0, &cub);
-		int color;
+		int color = RGB(0, 255, 0);
 		for (auto fig : figures) {
 			fig->Transform(proj, view, view_port);
-			color = RGB(0, 255, 0);
-			if (fig->type == Type::Cube_) {
-				color = RGB(0, 0, 255);
-			}
 			for (auto t : fig->triangles) {
-				//t.CalculateNormalVectors();
 				t.CalculatePointsAfterTransformation();
-				t.DrawTriangle(backface_culling, paint_triangles, z_bufferng, perspective_correction, fb, color,cam);
+				t.DrawTriangle(backface_culling, paint_triangles, z_bufferng, perspective_correction,draw_edges,draw_color, fb, color, cam);
 			}
 		}
 

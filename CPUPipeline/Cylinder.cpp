@@ -81,27 +81,45 @@ void Cylinder::CalculateNormalVectors(unsigned int first, unsigned int second, u
 	auto two = vertices[second];
 	auto three = vertices[third];
 
+	if (one.y == three.y && one.y == two.y) {
 
-	glm::vec3 one_ = (two - one);
-	glm::vec3 two_ = (three - one);
-	auto tmp = glm::cross(two_, one_);
-	tri->normal_vectors.push_back(glm::vec4(tmp.x, tmp.y, tmp.z, 1));
+		glm::vec3 one_ = (two - one);
+		glm::vec3 two_ = (three - one);
+		auto tmp = glm::cross(one_, two_);
+		tri->normal_vectors.push_back(glm::vec4(tmp.x, tmp.y, tmp.z, 0));
 
-	one_ = (three - two);
-	two_ = (one - two);
-	tmp = glm::cross(two_, one_);
-	tri->normal_vectors.push_back(glm::vec4(tmp.x, tmp.y, tmp.z, 1));
+		one_ = (three - two);
+		two_ = (one - two);
+		tmp = glm::cross(one_, two_);
+		tri->normal_vectors.push_back(glm::vec4(tmp.x, tmp.y, tmp.z, 0));
 
-	one_ = (one - three);
-	two_ = (two - three);
-	tmp = glm::cross(two_, one_);
-	tri->normal_vectors.push_back(glm::vec4(tmp.x, tmp.y, tmp.z, 1));
-
-	tri->tangential_vectors.push_back(tri->normal_vectors[1]);
-	tri->tangential_vectors.push_back(tri->normal_vectors[2]);
-	tri->tangential_vectors.push_back(tri->normal_vectors[0]);
-
-	tri->binormal_vectors.push_back(tri->normal_vectors[2]);
-	tri->binormal_vectors.push_back(tri->normal_vectors[0]);
-	tri->binormal_vectors.push_back(tri->normal_vectors[1]);
+		one_ = (one - three);
+		two_ = (two - three);
+		tmp = glm::cross(one_, two_);
+		tri->normal_vectors.push_back(glm::vec4(tmp.x, tmp.y, tmp.z, 0));
+	}if (one.y == two.y) {
+		glm::vec4 center = { 0,one.y,0,0 };
+		glm::vec4 center2 = { 0,three.y,0,0 };
+		tri->normal_vectors.push_back(one-center);
+		tri->normal_vectors.push_back(two-center);
+		center = center2;
+		tri->normal_vectors.push_back(three-center);
+	}
+	else if (two.y == three.y) {
+		glm::vec4 center = { 0,one.y,0,0 };
+		glm::vec4 center2 = { 0,three.y,0,0 };
+		tri->normal_vectors.push_back(one - center);
+		center = center2;
+		tri->normal_vectors.push_back(two - center);
+		tri->normal_vectors.push_back(three - center);
+	}
+	else {
+		glm::vec4 center = { 0,one.y,0,0 };
+		glm::vec4 center2 = { 0,two.y,0,0 };
+		tri->normal_vectors.push_back(one - center);
+		std::swap(center, center2);
+		tri->normal_vectors.push_back(two - center);
+		std::swap(center, center2);
+		tri->normal_vectors.push_back(three - center);
+	}
 }

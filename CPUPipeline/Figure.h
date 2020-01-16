@@ -30,12 +30,17 @@ public:
 	glm::mat4 center = glm::mat4(1.0f);
 
 	glm::mat4 transformation = glm::mat4(1.0f);
+	glm::mat4 model_matrix = glm::mat4(1.0f);
+	glm::mat4 re_model_matrix = glm::mat4(1.0f);
 
 	glm::mat4 trans_without_viewport = glm::mat4(1.0f);
 
 	float x_angle = 0.0f;
 	float y_angle = 0.0f;
 	float z_angle = 0.0f;
+
+	float kd = 0.6, ks = 0.2;
+	int n = 3;
 
 
 	virtual void ModMenu(int counter, Figure*& to_delete);

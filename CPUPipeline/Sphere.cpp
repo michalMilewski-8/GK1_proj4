@@ -79,7 +79,7 @@ void Sphere::CalculateNormalVectors(unsigned int first, unsigned int second, uns
 	tri->binormal_vectors.clear();
 	tri->normal_vectors.clear();
 	tri->tangential_vectors.clear();
-	int i, j;
+	/*int i, j;
 	float lon_val = 0;
 	float latt_val = 0;
 	float lattitude_step = M_PI / (float)lattitude;
@@ -112,7 +112,11 @@ void Sphere::CalculateNormalVectors(unsigned int first, unsigned int second, uns
 	tri->tangential_vectors.push_back({ r * cos(latt_val) * cos(lon_val),r * -sin(latt_val),r * cos(latt_val) * sin(lon_val), 1 });
 	tri->binormal_vectors.push_back({ r * sin(latt_val) * -sin(lon_val),r * cos(latt_val),r * sin(latt_val) * cos(lon_val), 1 });
 
-	tri->normal_vectors.push_back({ glm::cross(glm::vec3(tri->tangential_vectors[0]),glm::vec3(tri->binormal_vectors[0])),1 });
-	tri->normal_vectors.push_back({ glm::cross(glm::vec3(tri->tangential_vectors[1]),glm::vec3(tri->binormal_vectors[1])),1 });
-	tri->normal_vectors.push_back({ glm::cross(glm::vec3(tri->tangential_vectors[2]),glm::vec3(tri->binormal_vectors[2])),1 });
+	tri->normal_vectors.push_back({ glm::normalize(glm::cross(glm::vec3(tri->binormal_vectors[0]),glm::vec3(tri->tangential_vectors[0]))),1 });
+	tri->normal_vectors.push_back({ glm::normalize(glm::cross(glm::vec3(tri->binormal_vectors[1]),glm::vec3(tri->tangential_vectors[1]))),1 });
+	tri->normal_vectors.push_back({ glm::normalize(glm::cross(glm::vec3(tri->binormal_vectors[2]),glm::vec3(tri->tangential_vectors[2]))),1 });*/
+	tri->normal_vectors.push_back(glm::normalize(vertices[tri->vertices_ind[0]]));
+	tri->normal_vectors.push_back(glm::normalize(vertices[tri->vertices_ind[1]]));
+	tri->normal_vectors.push_back(glm::normalize(vertices[tri->vertices_ind[2]]));
+
 }

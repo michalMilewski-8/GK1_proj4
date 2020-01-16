@@ -93,11 +93,19 @@ void FrameBuffer::ClearColor(float red, float green, float blue)
 
 void FrameBuffer::RenderGL()
 {
-	if (m_depth_buffor)
-		delete[] m_depth_buffor;
+	//if (m_depth_buffor)
+	//	delete[] m_depth_buffor;
+	//
+	if (m_depth_buffor) {
+		for (int i = 0; i < m_width * m_height; i++) {
+			m_depth_buffor[i] = 2.0f;
+		}
+	}
+	else {
 	m_depth_buffor = new float[m_width * m_height];
 	for (int i = 0; i < m_width * m_height; i++) {
 		m_depth_buffor[i] = 2.0f;
+	}
 	}
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, tex);
@@ -166,6 +174,35 @@ float AproxZValue(int x0, int y0, float z0, int x1, int y1, float z1, int x2, in
 	return z2;
 }
 
+glm::vec3 AproxNormValue(int x0, int y0, glm::vec3 N0, int x1, int y1, glm::vec3 N1, int x2, int y2, glm::vec3 N2, int x, int y) {
+	float div = ((y1 - y2) * (x0 - x2) + (x2 - x1) * (y0 - y2));
+	if (div != 0) {
+		float w0 = ((y1 - y2) * (x - x2) + (x2 - x1) * (y - y2)) / div;
+		float w1 = ((y2 - y0) * (x - x2) + (x0 - x2) * (y - y2)) / div;
+		float w2 = 1 - w0 - w1;
+		return w0 * N0 + w1 * N1 + w2 * N2;
+	}
+	/*else if (x0 == x2) {
+		if (x2 == x1) {
+			return { 0,0,0 };
+		}
+		else {
+			float len = std::sqrt(((y1 - y2)* (y1 - y2)+ (x1 - x2)* (x1 - x2)));
+			return (N2 - N1 )/ len;
+		}
+	}
+	else {
+		if (x2 == x1) {
+			float len = std::sqrt(((y0 - y2) * (y0 - y2) + (x0 - x2) * (x0 - x2)));
+			return (N2 - N0) / len;
+		}
+		else {
+			return { 0,0,0 };
+		}
+d	}*/
+	return {0,0,0};
+}
+
 void FrameBuffer::DrawLine(int x0, int y0, int x1, int y1, int color)
 {
 	int dx = abs(x1 - x0);
@@ -215,6 +252,7 @@ void FrameBuffer::DrawLine(int x0, int y0, float z0, int x1, int y1, float z1, i
 		}
 	}
 }
+
 
 void FrameBuffer::DrawRect(int x0, int y0, int x1, int y1, int color)
 {
@@ -421,6 +459,136 @@ void FrameBuffer::FillTriangle(int x0, int y0, float z0, int x1, int y1, float z
 			std::swap(to, from);
 		}
 		for (from; from < to; from++) {
+			SetPixel(from, i, AproxZValue(x0, y0, z0, x1, y1, z1, x2, y2, z2, from, i), color);
+		}
+		second_y_x = (second_y_x + second_m);
+		max_y_x = (max_y_x + max_m);
+	}
+}
+
+void FrameBuffer::FillTriangle(int x0, int y0, float z0, int x1, int y1, float z1, int x2, int y2, float z2, glm::vec3 N1, glm::vec3 N2, glm::vec3 N3, glm::vec3 A0, glm::vec3 A1, glm::vec3 A2, Figure* fig, Camera* cam)
+{
+	int max_y;
+	int second_y;
+	int smallest_y;
+	float max_y_x, second_y_x, smallest_y_x;
+	float max_m, smallest_m, second_m;
+
+	if (y0 < y1) {
+		if (y0 < y2) {
+			smallest_y = y0;
+			smallest_y_x = x0;
+			if (y1 < y2) {
+				second_y = y1;
+				second_y_x = x1;
+				max_y = y2;
+				max_y_x = x2;
+			}
+			else {
+				second_y = y2;
+				second_y_x = x2;
+				max_y = y1;
+				max_y_x = x1;
+			}
+		}
+		else {
+			smallest_y = y2;
+			smallest_y_x = x2;
+			second_y = y0;
+			second_y_x = x0;
+			max_y = y1;
+			max_y_x = x1;
+		}
+	}
+	else if (y1 < y2) {
+		smallest_y = y1;
+		smallest_y_x = x1;
+		if (y0 < y2) {
+			second_y = y0;
+			second_y_x = x0;
+			max_y = y2;
+			max_y_x = x2;
+		}
+		else {
+			second_y = y2;
+			second_y_x = x2;
+			max_y = y0;
+			max_y_x = x0;
+		}
+	}
+	else {
+		smallest_y = y2;
+		smallest_y_x = x2;
+		second_y = y1;
+		second_y_x = x1;
+		max_y = y0;
+		max_y_x = x0;
+	}
+
+
+
+	if (smallest_y != second_y)
+		smallest_m = (smallest_y_x - second_y_x) / (float)(smallest_y - second_y);
+	if (second_y != max_y)
+		second_m = (second_y_x - max_y_x) / (float)(second_y - max_y);
+	if (smallest_y != max_y)
+		max_m = (smallest_y_x - max_y_x) / (float)(smallest_y - max_y);
+
+	max_y_x = smallest_y_x;
+	int from, to;
+	for (int i = smallest_y; i < second_y; i++) {
+		//DrawLine((int)round(smallest_y_x), i, (int)round( max_y_x),i,color);
+		from = (int)round(smallest_y_x);
+		to = (int)round(max_y_x);
+		if (to < from)
+		{
+			std::swap(to, from);
+		}
+		for (from; from <= to; from++) {
+			auto N = AproxNormValue(x0, y0, N1, x1, y1, N2, x2, y2, N3, from, i);
+			glm::vec3 C;
+			glm::vec3 to = AproxNormValue(x0, y0, A0, x1, y1, A1, x2, y2, A2, from, i);
+			C = Ia * ka;
+			for (auto I : *lights) {
+				C += I->CalculateValueLightVal(to, N, { fig->kd,fig->kd,fig->kd }, fig->ks, fig->n, cam->pos);
+			}
+			C *= 255;
+			C.x = C.x > 255 ? 255 : C.x;
+			C.y = C.y > 255 ? 255 : C.y;
+			C.z = C.z > 255 ? 255 : C.z;
+			C.x = C.x < 0 ? 0 : C.x;
+			C.y = C.y < 0 ? 0 : C.y;
+			C.z = C.z < 0 ? 0 : C.z;
+			int color = RGB((int)C.x, (int)C.y, (int)C.z);
+			SetPixel(from, i, AproxZValue(x0, y0, z0, x1, y1, z1, x2, y2, z2, from, i), color);
+		}
+		smallest_y_x = smallest_y_x + smallest_m;
+		max_y_x = max_y_x + max_m;
+	}
+	for (int i = second_y; i < max_y; i++) {
+		//DrawLine((int)round(second_y_x), i, (int)round(max_y_x), i, color);
+		from = (int)round(second_y_x);
+		to = (int)round(max_y_x);
+		if (to < from)
+		{
+			std::swap(to, from);
+		}
+		for (from; from < to; from++) {
+			auto N = AproxNormValue(x0, y0, N1, x1, y1, N2, x2, y2, N3, from, i);
+			glm::vec3 C;
+			glm::vec3 to = AproxNormValue(x0, y0, A0, x1, y1, A1, x2, y2, A2, from, i);
+			C = Ia * ka;
+			for (auto I : *lights) {
+				C += I->CalculateValueLightVal(to, N, { fig->kd,fig->kd,fig->kd }, fig->ks, fig->n, cam->pos);
+			}
+			C *= 255;
+			C.x = C.x > 255 ? 255 : C.x;
+			C.y = C.y > 255 ? 255 : C.y;
+			C.z = C.z > 255 ? 255 : C.z;
+			C.x = C.x < 0 ? 0 : C.x;
+			C.y = C.y < 0 ? 0 : C.y;
+			C.z = C.z < 0 ? 0 : C.z;
+			int color = RGB((int)C.x, (int)C.y, (int)C.z);
 			SetPixel(from, i, AproxZValue(x0, y0, z0, x1, y1, z1, x2, y2, z2, from, i), color);
 		}
 		second_y_x = (second_y_x + second_m);
