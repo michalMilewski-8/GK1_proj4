@@ -6,6 +6,8 @@
 #include "FrameBuffer.h"
 #include "Camera.h"
 #include "../Triangle.h"
+#include "bitmap_image.hpp"
+
 #define _USE_MATH_DEFINES
 
 #include <math.h>
@@ -34,6 +36,10 @@ public:
 	glm::mat4 re_model_matrix = glm::mat4(1.0f);
 
 	glm::mat4 trans_without_viewport = glm::mat4(1.0f);
+
+	bitmap_image* textura;
+
+	bool draw_texture = false;
 
 	float x_angle = 0.0f;
 	float y_angle = 0.0f;

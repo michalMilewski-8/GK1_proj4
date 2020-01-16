@@ -23,6 +23,7 @@ Triangle::Triangle(unsigned int first, unsigned int second, unsigned int third, 
 {
 	vertices_ind = { first,second,third };
 	fig = fig_;
+	CalculateNormalVectors();
 }
 
 float CalculateDist(glm::vec4 v, int i) {
@@ -199,7 +200,7 @@ void Triangle::DrawTriangle(bool backface_culling, bool paint_triangles, bool z_
 				{
 					if (z_bufferng)
 						if (draw_color)
-							fb.FillTriangle(tmp.x, tmp.y, tmp.z, tmp2.x, tmp2.y, tmp2.z, tmp3.x, tmp3.y, tmp3.z, N0, N1, N2, points[0], points[k], points[k+1] , fig, cam);
+							fb.FillTriangle(tmp.x, tmp.y, tmp.z, tmp2.x, tmp2.y, tmp2.z, tmp3.x, tmp3.y, tmp3.z, N0, N1, N2, points[0], points[k], points[k+1] , fig, cam,this);
 						else
 							fb.FillTriangle(tmp.x, tmp.y, tmp.z, tmp2.x, tmp2.y, tmp2.z, tmp3.x, tmp3.y, tmp3.z, color);
 					else
@@ -236,7 +237,7 @@ fig->trans_without_viewport * fig->vertices[vertices_ind[2]] };
 	w_points = { fig->model_matrix * fig->vertices[vertices_ind[0]],
  fig->model_matrix * fig->vertices[vertices_ind[1]],
 fig->model_matrix * fig->vertices[vertices_ind[2]] };
-	CalculateNormalVectors();
+	
 
 	transformed_normal_vectors = { fig->re_model_matrix * normal_vectors[0],
  fig->re_model_matrix * normal_vectors[1],

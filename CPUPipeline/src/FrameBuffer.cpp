@@ -466,7 +466,7 @@ void FrameBuffer::FillTriangle(int x0, int y0, float z0, int x1, int y1, float z
 	}
 }
 
-void FrameBuffer::FillTriangle(int x0, int y0, float z0, int x1, int y1, float z1, int x2, int y2, float z2, glm::vec3 N1, glm::vec3 N2, glm::vec3 N3, glm::vec3 A0, glm::vec3 A1, glm::vec3 A2, Figure* fig, Camera* cam)
+void FrameBuffer::FillTriangle(int x0, int y0, float z0, int x1, int y1, float z1, int x2, int y2, float z2, glm::vec3 N1, glm::vec3 N2, glm::vec3 N3, glm::vec3 A0, glm::vec3 A1, glm::vec3 A2, Figure* fig, Camera* cam,Triangle* tri)
 {
 	int max_y;
 	int second_y;
@@ -536,6 +536,8 @@ void FrameBuffer::FillTriangle(int x0, int y0, float z0, int x1, int y1, float z
 
 	max_y_x = smallest_y_x;
 	int from, to;
+	int width = fig->textura->width()-1;
+	int height = fig->textura->height()-1;
 	for (int i = smallest_y; i < second_y; i++) {
 		//DrawLine((int)round(smallest_y_x), i, (int)round( max_y_x),i,color);
 		from = (int)round(smallest_y_x);
@@ -544,12 +546,25 @@ void FrameBuffer::FillTriangle(int x0, int y0, float z0, int x1, int y1, float z
 		{
 			std::swap(to, from);
 		}
+		
 		for (from; from <= to; from++) {
 			auto N = AproxNormValue(x0, y0, N1, x1, y1, N2, x2, y2, N3, from, i);
 			glm::vec3 C;
 			glm::vec3 to = AproxNormValue(x0, y0, A0, x1, y1, A1, x2, y2, A2, from, i);
+			glm::vec3 texture_coord = AproxNormValue(x0, y0, { tri->texture_cord[0],0 }, x1, y1, { tri->texture_cord[1],0 }, x2, y2, { tri->texture_cord[2],0 }, from, i);
+			texture_coord.x = texture_coord.x > 1 ? 1 : texture_coord.x;
+			texture_coord.y = texture_coord.y > 1 ? 1 : texture_coord.y;
+			texture_coord.x = texture_coord.x < 0 ? 0 : texture_coord.x;
+			texture_coord.y = texture_coord.y < 0 ? 0 : texture_coord.y;
+			glm::u8vec3 values;
+			fig->textura->get_pixel((unsigned int)round(texture_coord.x*width), (unsigned int)round(texture_coord.y*height),values.r,values.g,values.b) ;
+			glm::vec3 col = glm::vec3(values) / 255.0f;
 			C = Ia * ka;
 			for (auto I : *lights) {
+				if (fig->draw_texture) {
+
+					C += I->CalculateValueLightVal(to, N, col, fig->ks, fig->n, cam->pos);
+				}else
 				C += I->CalculateValueLightVal(to, N, { fig->kd,fig->kd,fig->kd }, fig->ks, fig->n, cam->pos);
 			}
 			C *= 255;
@@ -577,8 +592,21 @@ void FrameBuffer::FillTriangle(int x0, int y0, float z0, int x1, int y1, float z
 			auto N = AproxNormValue(x0, y0, N1, x1, y1, N2, x2, y2, N3, from, i);
 			glm::vec3 C;
 			glm::vec3 to = AproxNormValue(x0, y0, A0, x1, y1, A1, x2, y2, A2, from, i);
+			glm::vec3 texture_coord = AproxNormValue(x0, y0, { tri->texture_cord[0],0 }, x1, y1, { tri->texture_cord[1],0 }, x2, y2, { tri->texture_cord[2],0 }, from, i);
+			texture_coord.x = texture_coord.x > 1 ? 1 : texture_coord.x;
+			texture_coord.y = texture_coord.y > 1 ? 1 : texture_coord.y;
+			texture_coord.x = texture_coord.x < 0 ? 0 : texture_coord.x;
+			texture_coord.y = texture_coord.y < 0 ? 0 : texture_coord.y;
+			glm::u8vec3 values;
+			fig->textura->get_pixel((unsigned int)round(texture_coord.x* width), (unsigned int)round(texture_coord.y* height), values.r, values.g, values.b);
+			glm::vec3 col = glm::vec3(values) / 255.0f;
 			C = Ia * ka;
 			for (auto I : *lights) {
+				if (fig->draw_texture) {
+
+					C += I->CalculateValueLightVal(to, N, col, fig->ks, fig->n, cam->pos);
+				}
+				else
 				C += I->CalculateValueLightVal(to, N, { fig->kd,fig->kd,fig->kd }, fig->ks, fig->n, cam->pos);
 			}
 			C *= 255;

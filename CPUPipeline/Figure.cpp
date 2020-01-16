@@ -4,6 +4,7 @@
 
 void Figure::ModMenu(int counter, Figure*& to_delete)
 {
+	ImGui::Checkbox("Draw Texture", &draw_texture);
 	float x_trans, y_trans, z_trans;
 	Helper::getTranslationValues(x_trans, y_trans, z_trans, this->translate);
 	ImGui::SliderFloat("Move X axis", &x_trans, -5.0f, 5.0f);

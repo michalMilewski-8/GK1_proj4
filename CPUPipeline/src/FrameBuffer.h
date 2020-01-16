@@ -56,7 +56,7 @@ public:
 
 	void FillTriangle(int x0, int y0, int x1, int y1, int x2, int y2, int color);
 	void FillTriangle(int x0, int y0,float z0, int x1, int y1,float z1, int x2, int y2,float z2, int color);
-	void FillTriangle(int x0, int y0,float z0, int x1, int y1,float z1, int x2, int y2,float z2, glm::vec3 N1, glm::vec3 N2, glm::vec3 N3, glm::vec3 A0, glm::vec3 A1, glm::vec3 A2, Figure* fig, Camera* cam);
+	void FillTriangle(int x0, int y0,float z0, int x1, int y1,float z1, int x2, int y2,float z2, glm::vec3 N1, glm::vec3 N2, glm::vec3 N3, glm::vec3 A0, glm::vec3 A1, glm::vec3 A2, Figure* fig, Camera* cam, Triangle* tri);
 
 };
 

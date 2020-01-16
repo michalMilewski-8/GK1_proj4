@@ -27,9 +27,7 @@ public:
 	std::vector<glm::vec4> transformed_tangential_vectors;
 	std::vector<glm::vec4> transformed_binormal_vectors;
 
-	glm::vec2 texture_cord[3] = { {0,0},{1,1},{1,0} };
-	std::byte* textura;
-	glm::vec2* textura_val;
+	glm::vec2 texture_cord[3] = { {0,0},{1,0},{1,1} };
 
 	void DrawTriangle(bool backface_culling, bool paint_triangles, bool z_bufferng, bool perspective_correction, bool draw_edges, bool draw_color, FrameBuffer& fb, int color, Camera* cam);
 	void CalculatePointsAfterTransformation();

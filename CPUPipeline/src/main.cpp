@@ -16,6 +16,7 @@
 #include "../Sphere.h"
 #include "../Cylinder.h"
 #include "../Helper.h"
+#include "bitmap_image.hpp"
 
 #define DEFAULT_WIDTH 1280
 #define DEFAULT_HEIGHT 720
@@ -42,6 +43,7 @@ bool backface_culling = true;
 bool z_bufferng = true;
 Camera* cam;
 FrameBuffer* fram;
+bitmap_image texture;
 
 
 static void glfw_error_callback(int error, const char* description)
@@ -242,12 +244,14 @@ void CreateMenu(std::vector<Figure*>* figures, std::vector<Camera*>* cameras, st
 			Cube* tmp = new Cube();
 			tmp->center = Helper::createTranslationMatrix(-0.5f, -0.5f, -0.5f);
 			tmp->scale = Helper::createScaleMatrix(0.2f, 0.2f, 0.2f);
+			tmp->textura = &texture;
 			figures->push_back(tmp);
 		}
 		if (ImGui::Button("Add Sphere"))// Buttons return true when clicked (most widgets return true when edited/activated)
 		{
 			Sphere* tmp = new Sphere();
 			tmp->scale = Helper::createScaleMatrix(0.2f, 0.2f, 0.2f);
+			tmp->textura = &texture;
 			figures->push_back(tmp);
 
 		}
@@ -255,12 +259,14 @@ void CreateMenu(std::vector<Figure*>* figures, std::vector<Camera*>* cameras, st
 		{
 			Cone* tmp = new Cone();
 			tmp->scale = Helper::createScaleMatrix(0.2f, 0.2f, 0.2f);
+			tmp->textura = &texture;
 			figures->push_back(tmp);
 		}
 		if (ImGui::Button("Add Cylinder"))// Buttons return true when clicked (most widgets return true when edited/activated)
 		{
 			Cylinder* tmp = new Cylinder();
 			tmp->scale = Helper::createScaleMatrix(0.2f, 0.2f, 0.2f);
+			tmp->textura = &texture;
 			figures->push_back(tmp);
 		}
 
@@ -303,7 +309,13 @@ int main(int, char**)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
+	texture = bitmap_image("texture.bmp");
 
+
+	if (!texture) {
+		int i;
+		i = 0;
+	}
 
 	//createMenu();
 
@@ -375,7 +387,7 @@ int main(int, char**)
 
 	cub2.translate = Helper::createTranslationMatrix(-3.0f, 0, 0);
 
-
+	sp.textura = &texture;
 	//figures.push_back(&cub);
 	//figures.push_back(&cub2);
 	figures.push_back(&sp);
