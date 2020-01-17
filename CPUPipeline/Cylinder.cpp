@@ -83,43 +83,88 @@ void Cylinder::CalculateNormalVectors(unsigned int first, unsigned int second, u
 
 	if (one.y == three.y && one.y == two.y) {
 
+		glm::vec4 center = { 0,one.y,0,1 };
+
 		glm::vec3 one_ = (two - one);
 		glm::vec3 two_ = (three - one);
 		auto tmp = glm::cross(one_, two_);
-		tri->normal_vectors.push_back(glm::vec4(tmp.x, tmp.y, tmp.z, 0));
-
+		tri->normal_vectors.push_back(glm::vec4(tmp, 0));
+		glm::vec3 binormal = glm::normalize(one - center);
+		tri->binormal_vectors.push_back({ binormal ,0 });
+		tri->tangential_vectors.push_back({glm::normalize(glm::cross(tmp,binormal)),0});
 		one_ = (three - two);
 		two_ = (one - two);
 		tmp = glm::cross(one_, two_);
 		tri->normal_vectors.push_back(glm::vec4(tmp.x, tmp.y, tmp.z, 0));
+		binormal = glm::normalize(two - center);
+		tri->binormal_vectors.push_back({ binormal ,0 });
+		tri->tangential_vectors.push_back({ glm::normalize(glm::cross(tmp,binormal)),0 });
 
 		one_ = (one - three);
 		two_ = (two - three);
 		tmp = glm::cross(one_, two_);
 		tri->normal_vectors.push_back(glm::vec4(tmp.x, tmp.y, tmp.z, 0));
+		binormal = glm::normalize(three - center);
+		tri->binormal_vectors.push_back({ binormal ,0 });
+		tri->tangential_vectors.push_back({ glm::normalize(glm::cross(tmp,binormal)),0 });
 	}if (one.y == two.y) {
-		glm::vec4 center = { 0,one.y,0,0 };
-		glm::vec4 center2 = { 0,three.y,0,0 };
+		glm::vec4 center = { 0,one.y,0,1 };
+		glm::vec4 center2 = { 0,three.y,0,1 };
 		tri->normal_vectors.push_back(one-center);
 		tri->normal_vectors.push_back(two-center);
-		center = center2;
+		std::swap(center , center2);
 		tri->normal_vectors.push_back(three-center);
+
+		glm::vec3 one_t = center2 - center;
+		glm::vec3 three_t = center-center2;
+
+		tri->tangential_vectors.push_back({ glm::normalize(glm::cross(glm::vec3(tri->normal_vectors[0]),one_t)),0 });
+		tri->tangential_vectors.push_back({ glm::normalize(glm::cross(glm::vec3(tri->normal_vectors[1]),one_t)),0 });
+		tri->tangential_vectors.push_back({ glm::normalize(glm::cross(glm::vec3(tri->normal_vectors[2]),three_t)),0 });
+
+		tri->binormal_vectors.push_back({ glm::normalize(glm::cross(glm::vec3(tri->normal_vectors[0]),glm::vec3(tri->tangential_vectors[0]))),0 });
+		tri->binormal_vectors.push_back({ glm::normalize(glm::cross(glm::vec3(tri->normal_vectors[1]),glm::vec3(tri->tangential_vectors[1]))),0 });
+		tri->binormal_vectors.push_back({ glm::normalize(glm::cross(glm::vec3(tri->normal_vectors[2]),glm::vec3(tri->tangential_vectors[2]))),0 });
+
+
 	}
 	else if (two.y == three.y) {
-		glm::vec4 center = { 0,one.y,0,0 };
-		glm::vec4 center2 = { 0,three.y,0,0 };
+		glm::vec4 center = { 0,one.y,0,1 };
+		glm::vec4 center2 = { 0,three.y,0,1 };
 		tri->normal_vectors.push_back(one - center);
-		center = center2;
+		std::swap(center, center2);
 		tri->normal_vectors.push_back(two - center);
 		tri->normal_vectors.push_back(three - center);
+
+		glm::vec3 one_t = center2 - center;
+		glm::vec3 three_t = center - center2;
+
+		tri->tangential_vectors.push_back({ glm::normalize(glm::cross(glm::vec3(tri->normal_vectors[0]),one_t)),0 });
+		tri->tangential_vectors.push_back({ glm::normalize(glm::cross(glm::vec3(tri->normal_vectors[1]),three_t)),0 });
+		tri->tangential_vectors.push_back({ glm::normalize(glm::cross(glm::vec3(tri->normal_vectors[2]),three_t)),0 });
+
+		tri->binormal_vectors.push_back({ glm::normalize(glm::cross(glm::vec3(tri->normal_vectors[0]),glm::vec3(tri->tangential_vectors[0]))),0 });
+		tri->binormal_vectors.push_back({ glm::normalize(glm::cross(glm::vec3(tri->normal_vectors[1]),glm::vec3(tri->tangential_vectors[1]))),0 });
+		tri->binormal_vectors.push_back({ glm::normalize(glm::cross(glm::vec3(tri->normal_vectors[2]),glm::vec3(tri->tangential_vectors[2]))),0 });
 	}
 	else {
-		glm::vec4 center = { 0,one.y,0,0 };
-		glm::vec4 center2 = { 0,two.y,0,0 };
+		glm::vec4 center = { 0,one.y,0,1 };
+		glm::vec4 center2 = { 0,two.y,0,1 };
 		tri->normal_vectors.push_back(one - center);
 		std::swap(center, center2);
 		tri->normal_vectors.push_back(two - center);
 		std::swap(center, center2);
 		tri->normal_vectors.push_back(three - center);
+
+		glm::vec3 one_t = center2 - center;
+		glm::vec3 three_t = center - center2;
+
+		tri->tangential_vectors.push_back({ glm::normalize(glm::cross(glm::vec3(tri->normal_vectors[0]),three_t)),0 });
+		tri->tangential_vectors.push_back({ glm::normalize(glm::cross(glm::vec3(tri->normal_vectors[1]),one_t)),0 });
+		tri->tangential_vectors.push_back({ glm::normalize(glm::cross(glm::vec3(tri->normal_vectors[2]),three_t)),0 });
+
+		tri->binormal_vectors.push_back({ glm::normalize(glm::cross(glm::vec3(tri->normal_vectors[0]),glm::vec3(tri->tangential_vectors[0]))),0 });
+		tri->binormal_vectors.push_back({ glm::normalize(glm::cross(glm::vec3(tri->normal_vectors[1]),glm::vec3(tri->tangential_vectors[1]))),0 });
+		tri->binormal_vectors.push_back({ glm::normalize(glm::cross(glm::vec3(tri->normal_vectors[2]),glm::vec3(tri->tangential_vectors[2]))),0 });
 	}
 }

@@ -60,3 +60,19 @@ void Helper::getScaleValue(float& x, float& y, float& z, glm::mat4& scale) {
 	y = scale[1][1];
 	z = scale[2][2];
 }
+
+float Helper::Length(glm::vec3 vec)
+{
+	return sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
+}
+
+float Helper::Length(glm::vec4 vec)
+{
+	return sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z + vec.w * vec.w);
+}
+
+float Helper::Length(glm::vec2 vec)
+{
+	return sqrt(vec.x * vec.x + vec.y * vec.y);
+
+}

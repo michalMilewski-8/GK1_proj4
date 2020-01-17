@@ -108,7 +108,7 @@ void Triangle::DrawTriangle(bool backface_culling, bool paint_triangles, bool z_
 		//CalculateNormalVectors();
 		if (points_to.size() > 0) {
 			auto D = points_to[0];
-			//std::sort(points_to.begin()++, points_to.end(), [D](glm::vec4 a, glm::vec4 b) {return glm::length(a - D) > glm::length(b - D); });
+		//std::sort(points_to.begin()++, points_to.end(), [D](glm::vec4 a, glm::vec4 b) {return glm::length(a - D) > glm::length(b - D); });
 			points = points_to;
 			//points.push_back(before_last_transformations[0]);
 			//points.push_back(before_last_transformations[1]);
@@ -250,18 +250,6 @@ fig->re_model_matrix * normal_vectors[2] };
 	//	transformed_tangential_vectors = { fig->transformation * tangential_vectors[0],
 	// fig->transformation * tangential_vectors[1],
 	//fig->transformation * tangential_vectors[2] };
-
-		/*transformed_normal_vectors[0] /= transformed_normal_vectors[0].w;
-		transformed_normal_vectors[1] /= transformed_normal_vectors[1].w;
-		transformed_normal_vectors[2] /= transformed_normal_vectors[2].w;*/
-
-		//transformed_binormal_vectors[0] /= transformed_binormal_vectors[0].w;
-		//transformed_binormal_vectors[1] /= transformed_binormal_vectors[1].w;
-		//transformed_binormal_vectors[2] /= transformed_binormal_vectors[2].w;
-
-		//transformed_tangential_vectors[0] /= transformed_tangential_vectors[0].w;
-		//transformed_tangential_vectors[1] /= transformed_tangential_vectors[1].w;
-		//transformed_tangential_vectors[2] /= transformed_tangential_vectors[2].w;
 
 	after_transformations[0] /= after_transformations[0].w;
 	after_transformations[1] /= after_transformations[1].w;

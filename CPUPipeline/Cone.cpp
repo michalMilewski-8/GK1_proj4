@@ -77,21 +77,31 @@ void Cone::CalculateNormalVectors(unsigned int first, unsigned int second, unsig
 	auto three = vertices[third];
 
 	if (one.y == three.y && one.y == two.y) {
+		glm::vec4 center = { 0,one.y,0,1 };
 
 		glm::vec3 one_ = (two - one);
 		glm::vec3 two_ = (three - one);
 		auto tmp = glm::cross(one_, two_);
 		tri->normal_vectors.push_back(glm::vec4(tmp.x, tmp.y, tmp.z, 0));
+		glm::vec3 binormal = glm::normalize(one - center);
+		tri->binormal_vectors.push_back({ binormal ,0 });
+		tri->tangential_vectors.push_back({ glm::normalize(glm::cross(tmp,binormal)),0 });
 
 		one_ = (three - two);
 		two_ = (one - two);
 		tmp = glm::cross(one_, two_);
 		tri->normal_vectors.push_back(glm::vec4(tmp.x, tmp.y, tmp.z, 0));
+		binormal = glm::normalize(two - center);
+		tri->binormal_vectors.push_back({ binormal ,0 });
+		tri->tangential_vectors.push_back({ glm::normalize(glm::cross(tmp,binormal)),0 });
 
 		one_ = (one - three);
 		two_ = (two - three);
 		tmp = glm::cross(one_, two_);
 		tri->normal_vectors.push_back(glm::vec4(tmp.x, tmp.y, tmp.z, 0));
+		binormal = glm::normalize(three- center);
+		tri->binormal_vectors.push_back({ binormal ,0 });
+		tri->tangential_vectors.push_back({ glm::normalize(glm::cross(tmp,binormal)),0 });
 	}
 	else if (one.y == two.y) {
 		glm::vec3 one_ = (two - one);

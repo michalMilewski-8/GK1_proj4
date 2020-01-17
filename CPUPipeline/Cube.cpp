@@ -66,30 +66,73 @@ void Cube::CalculateNormalVectors(unsigned int first, unsigned int second, unsig
 	auto one = vertices[first];
 	auto two = vertices[second];
 	auto three = vertices[third];
+	glm::vec3 tangenial;
+	glm::vec3 binormal;
 
+	int which = -1;
 
 	glm::vec3 one_ = (two - one);
 	glm::vec3 two_ = (three - one);
 	auto tmp = glm::cross(one_, two_);
-	tri->normal_vectors.push_back(glm::vec4(tmp.x, tmp.y, tmp.z, 1));
+	if (glm::dot(one_, two_) == 0)
+	{
+		which = 1;
+		tangenial = -one_;
+		binormal = -two_;
+		if (glm::cross(tangenial, binormal) != tmp) {
+			std::swap(tangenial, binormal);
+		}
+	}
+	tri->normal_vectors.push_back(glm::vec4(tmp.x, tmp.y, tmp.z, 0));
 
 	one_ = (three - two);
 	two_ = (one - two);
 	tmp = glm::cross(one_, two_);
-	tri->normal_vectors.push_back(glm::vec4(tmp.x, tmp.y, tmp.z, 1));
+	if (glm::dot(one_, two_) == 0)
+	{
+		which = 2;
+		tangenial = -one_;
+		binormal = -two_;
+		if (glm::cross(tangenial, binormal) != tmp) {
+			std::swap(tangenial, binormal);
+		}
+	}
+	tri->normal_vectors.push_back(glm::vec4(tmp.x, tmp.y, tmp.z, 0));
 
 	one_ = (one - three);
 	two_ = (two - three);
 	tmp = glm::cross(one_, two_);
-	tri->normal_vectors.push_back(glm::vec4(tmp.x, tmp.y, tmp.z, 1));
+	if (glm::dot(one_, two_) == 0)
+	{
+		which = 3;
+		tangenial = -one_;
+		binormal = -two_;
+		if (glm::cross(tangenial, binormal) != tmp) {
+			std::swap(tangenial, binormal);
+		}
+	}
+	tri->normal_vectors.push_back(glm::vec4(tmp.x, tmp.y, tmp.z, 0));
 
-	//tri->tangential_vectors.push_back(tri->normal_vectors[1]);
-	//tri->tangential_vectors.push_back(tri->normal_vectors[2]);
-	//tri->tangential_vectors.push_back(tri->normal_vectors[0]);
+	if (which == 1) {
+		tri->tangential_vectors.push_back({ tangenial ,0 });
+		tri->tangential_vectors.push_back({ -binormal ,0 });
+		tri->tangential_vectors.push_back({ binormal ,0 });
+	}
+	else if (which == 2) {
+		tri->tangential_vectors.push_back({ binormal ,0 });
+		tri->tangential_vectors.push_back({ tangenial ,0 });
+		tri->tangential_vectors.push_back({ -binormal ,0 });
+	}
+	else if (which == 3) {
+		tri->tangential_vectors.push_back({ -binormal ,0 });
+		tri->tangential_vectors.push_back({ binormal ,0 });
+		tri->tangential_vectors.push_back({ tangenial ,0 });
+	}
 
-	//tri->binormal_vectors.push_back(tri->normal_vectors[2]);
-	//tri->binormal_vectors.push_back(tri->normal_vectors[0]);
-	//tri->binormal_vectors.push_back(tri->normal_vectors[1]);
+	tri->binormal_vectors.push_back({ glm::normalize(glm::cross(glm::vec3(tri->tangential_vectors[0]), glm::vec3(tri->normal_vectors[0]))),0 });
+	tri->binormal_vectors.push_back({ glm::normalize(glm::cross(glm::vec3(tri->tangential_vectors[1]), glm::vec3(tri->normal_vectors[1]))),0 });
+	tri->binormal_vectors.push_back({ glm::normalize(glm::cross(glm::vec3(tri->tangential_vectors[2]), glm::vec3(tri->normal_vectors[2]))),0 });
+
 }
 
 void Cube::CalculateEdgesLengths()

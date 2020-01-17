@@ -38,6 +38,7 @@ public:
 	glm::mat4 trans_without_viewport = glm::mat4(1.0f);
 
 	bitmap_image* textura;
+	bitmap_image* normal_textura;
 
 	bool draw_texture = false;
 

@@ -17,5 +17,7 @@ public:
 	static void getTranslationValues(float& x, float& y, float& z, glm::mat4& translate);
 	static glm::mat4 createScaleMatrix(float x, float y, float z);
 	static void getScaleValue(float& x, float& y, float& z, glm::mat4& scale);
-
+	static float Length(glm::vec3 vec);
+	static float Length(glm::vec4 vec);
+	static float Length(glm::vec2 vec);
 };
