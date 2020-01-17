@@ -319,7 +319,7 @@ int main(int, char**)
 
 	if (!texture) {
 		int i;
-		i = 0;
+		i = 0;;
 	}
 
 	//createMenu();
