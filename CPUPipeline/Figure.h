@@ -41,6 +41,7 @@ public:
 	bitmap_image* normal_textura;
 
 	bool draw_texture = false;
+	bool draw_normal_texture = false;
 
 	float x_angle = 0.0f;
 	float y_angle = 0.0f;

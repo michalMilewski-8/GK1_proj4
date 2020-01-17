@@ -44,6 +44,7 @@ bool z_bufferng = true;
 Camera* cam;
 FrameBuffer* fram;
 bitmap_image texture;
+bitmap_image normal_texture;
 
 
 static void glfw_error_callback(int error, const char* description)
@@ -245,6 +246,7 @@ void CreateMenu(std::vector<Figure*>* figures, std::vector<Camera*>* cameras, st
 			tmp->center = Helper::createTranslationMatrix(-0.5f, -0.5f, -0.5f);
 			tmp->scale = Helper::createScaleMatrix(0.2f, 0.2f, 0.2f);
 			tmp->textura = &texture;
+			tmp->normal_textura = &normal_texture;
 			figures->push_back(tmp);
 		}
 		if (ImGui::Button("Add Sphere"))// Buttons return true when clicked (most widgets return true when edited/activated)
@@ -252,6 +254,7 @@ void CreateMenu(std::vector<Figure*>* figures, std::vector<Camera*>* cameras, st
 			Sphere* tmp = new Sphere();
 			tmp->scale = Helper::createScaleMatrix(0.2f, 0.2f, 0.2f);
 			tmp->textura = &texture;
+			tmp->normal_textura = &normal_texture;
 			figures->push_back(tmp);
 
 		}
@@ -260,6 +263,7 @@ void CreateMenu(std::vector<Figure*>* figures, std::vector<Camera*>* cameras, st
 			Cone* tmp = new Cone();
 			tmp->scale = Helper::createScaleMatrix(0.2f, 0.2f, 0.2f);
 			tmp->textura = &texture;
+			tmp->normal_textura = &normal_texture;
 			figures->push_back(tmp);
 		}
 		if (ImGui::Button("Add Cylinder"))// Buttons return true when clicked (most widgets return true when edited/activated)
@@ -267,6 +271,7 @@ void CreateMenu(std::vector<Figure*>* figures, std::vector<Camera*>* cameras, st
 			Cylinder* tmp = new Cylinder();
 			tmp->scale = Helper::createScaleMatrix(0.2f, 0.2f, 0.2f);
 			tmp->textura = &texture;
+			tmp->normal_textura = &normal_texture;
 			figures->push_back(tmp);
 		}
 
@@ -306,8 +311,8 @@ int main(int, char**)
 	if (!glfwInit())
 		return 1;
 
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+	//glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	//glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
 	texture = bitmap_image("texture.bmp");
 
