@@ -102,10 +102,10 @@ void FrameBuffer::RenderGL()
 		}
 	}
 	else {
-	m_depth_buffor = new float[m_width * m_height];
-	for (int i = 0; i < m_width * m_height; i++) {
-		m_depth_buffor[i] = 2.0f;
-	}
+		m_depth_buffor = new float[m_width * m_height];
+		for (int i = 0; i < m_width * m_height; i++) {
+			m_depth_buffor[i] = 2.0f;
+		}
 	}
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, tex);
@@ -174,6 +174,29 @@ float AproxZValue(int x0, int y0, float z0, int x1, int y1, float z1, int x2, in
 	return z2;
 }
 
+float AproxZValue(float z0, float z1, float z2, float w0, float w1, float w2) {
+	/*if (w1 == w2 == w0 == 0.0f)
+		return 10.0f;*/
+	return w0 * z0 + w1 * z1 + w2 * z2;
+}
+void AproxwVals(int x0, int y0, int x1, int y1, int x2, int y2, int x, int y, float& w0, float& w1, float& w2) {
+	float div = ((y1 - y2) * (x0 - x2) + (x2 - x1) * (y0 - y2));
+	if (div != 0) {
+		w0 = ((y1 - y2) * (x - x2) + (x2 - x1) * (y - y2)) / div;
+		w1 = ((y2 - y0) * (x - x2) + (x0 - x2) * (y - y2)) / div;
+		w2 = 1 - w0 - w1;
+	}
+	else
+	{
+		w0 = 0;
+		w1 = 0;
+		w2 = 0;
+	}
+}
+glm::vec3 AproxNormValue(glm::vec3 N0, glm::vec3 N1, glm::vec3 N2, float w0, float w1, float w2) {
+	return w0 * N0 + w1 * N1 + w2 * N2;
+}
+
 glm::vec3 AproxNormValue(int x0, int y0, glm::vec3 N0, int x1, int y1, glm::vec3 N1, int x2, int y2, glm::vec3 N2, int x, int y) {
 	float div = ((y1 - y2) * (x0 - x2) + (x2 - x1) * (y0 - y2));
 	if (div != 0) {
@@ -200,8 +223,10 @@ glm::vec3 AproxNormValue(int x0, int y0, glm::vec3 N0, int x1, int y1, glm::vec3
 			return { 0,0,0 };
 		}
 d	}*/
-	return {0,0,0};
+	return { 0,0,0 };
 }
+
+
 
 void FrameBuffer::DrawLine(int x0, int y0, int x1, int y1, int color)
 {
@@ -267,13 +292,9 @@ void FrameBuffer::DrawRect(int x0, int y0, int x1, int y1, int color)
 	}
 }
 
-void FrameBuffer::FillTriangle(int x0, int y0, int x1, int y1, int x2, int y2, int color) {
-	int max_y;
-	int second_y;
-	int smallest_y;
-	float max_y_x, second_y_x, smallest_y_x;
-	float max_m, smallest_m, second_m;
-
+void simpleSort(int x0, int y0, int x1, int y1, int x2, int y2, int& max_y,
+	int& second_y, int& smallest_y, float& max_y_x, float& second_y_x,
+	float& smallest_y_x, float& max_m, float& smallest_m, float& second_m) {
 	if (y0 < y1) {
 		if (y0 < y2) {
 			smallest_y = y0;
@@ -335,6 +356,19 @@ void FrameBuffer::FillTriangle(int x0, int y0, int x1, int y1, int x2, int y2, i
 		max_m = (smallest_y_x - max_y_x) / (float)(smallest_y - max_y);
 
 	max_y_x = smallest_y_x;
+}
+
+void FrameBuffer::FillTriangle(int x0, int y0, int x1, int y1, int x2, int y2, int color) {
+	int max_y = 0;
+	int second_y = 0;
+	int smallest_y = 0;
+	float max_y_x = 0, second_y_x = 0, smallest_y_x = 0;
+	float max_m = 0, smallest_m = 0, second_m = 0;
+
+	simpleSort(x0, y0, x1, y1, x2, y2, max_y,
+		second_y, smallest_y, max_y_x, second_y_x,
+		smallest_y_x, max_m, smallest_m, second_m);
+
 	int from, to;
 	for (int i = smallest_y; i < second_y; i++) {
 		//DrawLine((int)round(smallest_y_x), i, (int)round( max_y_x),i,color);
@@ -368,76 +402,17 @@ void FrameBuffer::FillTriangle(int x0, int y0, int x1, int y1, int x2, int y2, i
 
 void FrameBuffer::FillTriangle(int x0, int y0, float z0, int x1, int y1, float z1, int x2, int y2, float z2, int color)
 {
-	int max_y;
-	int second_y;
-	int smallest_y;
-	float max_y_x, second_y_x, smallest_y_x;
-	float max_m, smallest_m, second_m;
+	int max_y = 0;
+	int second_y = 0;
+	int smallest_y = 0;
+	float max_y_x = 0, second_y_x = 0, smallest_y_x = 0;
+	float max_m = 0, smallest_m = 0, second_m = 0;
 
-	if (y0 < y1) {
-		if (y0 < y2) {
-			smallest_y = y0;
-			smallest_y_x = x0;
-			if (y1 < y2) {
-				second_y = y1;
-				second_y_x = x1;
-				max_y = y2;
-				max_y_x = x2;
-			}
-			else {
-				second_y = y2;
-				second_y_x = x2;
-				max_y = y1;
-				max_y_x = x1;
-			}
-		}
-		else {
-			smallest_y = y2;
-			smallest_y_x = x2;
-			second_y = y0;
-			second_y_x = x0;
-			max_y = y1;
-			max_y_x = x1;
-		}
-	}
-	else if (y1 < y2) {
-		smallest_y = y1;
-		smallest_y_x = x1;
-		if (y0 < y2) {
-			second_y = y0;
-			second_y_x = x0;
-			max_y = y2;
-			max_y_x = x2;
-		}
-		else {
-			second_y = y2;
-			second_y_x = x2;
-			max_y = y0;
-			max_y_x = x0;
-		}
-	}
-	else {
-		smallest_y = y2;
-		smallest_y_x = x2;
-		second_y = y1;
-		second_y_x = x1;
-		max_y = y0;
-		max_y_x = x0;
-	}
-
-
-
-	if (smallest_y != second_y)
-		smallest_m = (smallest_y_x - second_y_x) / (float)(smallest_y - second_y);
-	if (second_y != max_y)
-		second_m = (second_y_x - max_y_x) / (float)(second_y - max_y);
-	if (smallest_y != max_y)
-		max_m = (smallest_y_x - max_y_x) / (float)(smallest_y - max_y);
-
-	max_y_x = smallest_y_x;
+	simpleSort(x0, y0, x1, y1, x2, y2, max_y,
+		second_y, smallest_y, max_y_x, second_y_x,
+		smallest_y_x, max_m, smallest_m, second_m);
 	int from, to;
 	for (int i = smallest_y; i < second_y; i++) {
-		//DrawLine((int)round(smallest_y_x), i, (int)round( max_y_x),i,color);
 		from = (int)round(smallest_y_x);
 		to = (int)round(max_y_x);
 		if (to < from)
@@ -451,7 +426,6 @@ void FrameBuffer::FillTriangle(int x0, int y0, float z0, int x1, int y1, float z
 		max_y_x = max_y_x + max_m;
 	}
 	for (int i = second_y; i < max_y; i++) {
-		//DrawLine((int)round(second_y_x), i, (int)round(max_y_x), i, color);
 		from = (int)round(second_y_x);
 		to = (int)round(max_y_x);
 		if (to < from)
@@ -466,107 +440,52 @@ void FrameBuffer::FillTriangle(int x0, int y0, float z0, int x1, int y1, float z
 	}
 }
 
-void FrameBuffer::FillTriangle(int x0, int y0, float z0, int x1, int y1, float z1, int x2, int y2, float z2, glm::vec3 N1, glm::vec3 N2, glm::vec3 N3, glm::vec3 A0, glm::vec3 A1, glm::vec3 A2, Figure* fig, Camera* cam,Triangle* tri)
+void FrameBuffer::FillTriangle(int x0, int y0, float z0, int x1, int y1, float z1, int x2, int y2, float z2, glm::vec3 N1, glm::vec3 N2, glm::vec3 N3, glm::vec3 A0, glm::vec3 A1, glm::vec3 A2, Figure* fig, Camera* cam, Triangle* tri)
 {
-	int max_y;
-	int second_y;
-	int smallest_y;
-	float max_y_x, second_y_x, smallest_y_x;
-	float max_m, smallest_m, second_m;
+	int max_y = 0;
+	int second_y = 0;
+	int smallest_y = 0;
+	float max_y_x = 0, second_y_x = 0, smallest_y_x = 0;
+	float max_m = 0, smallest_m = 0, second_m = 0;
 
-	if (y0 < y1) {
-		if (y0 < y2) {
-			smallest_y = y0;
-			smallest_y_x = x0;
-			if (y1 < y2) {
-				second_y = y1;
-				second_y_x = x1;
-				max_y = y2;
-				max_y_x = x2;
-			}
-			else {
-				second_y = y2;
-				second_y_x = x2;
-				max_y = y1;
-				max_y_x = x1;
-			}
-		}
-		else {
-			smallest_y = y2;
-			smallest_y_x = x2;
-			second_y = y0;
-			second_y_x = x0;
-			max_y = y1;
-			max_y_x = x1;
-		}
-	}
-	else if (y1 < y2) {
-		smallest_y = y1;
-		smallest_y_x = x1;
-		if (y0 < y2) {
-			second_y = y0;
-			second_y_x = x0;
-			max_y = y2;
-			max_y_x = x2;
-		}
-		else {
-			second_y = y2;
-			second_y_x = x2;
-			max_y = y0;
-			max_y_x = x0;
-		}
-	}
-	else {
-		smallest_y = y2;
-		smallest_y_x = x2;
-		second_y = y1;
-		second_y_x = x1;
-		max_y = y0;
-		max_y_x = x0;
-	}
-
-
-
-	if (smallest_y != second_y)
-		smallest_m = (smallest_y_x - second_y_x) / (float)(smallest_y - second_y);
-	if (second_y != max_y)
-		second_m = (second_y_x - max_y_x) / (float)(second_y - max_y);
-	if (smallest_y != max_y)
-		max_m = (smallest_y_x - max_y_x) / (float)(smallest_y - max_y);
-
-	max_y_x = smallest_y_x;
+	simpleSort(x0, y0, x1, y1, x2, y2, max_y,
+		second_y, smallest_y, max_y_x, second_y_x,
+		smallest_y_x, max_m, smallest_m, second_m);
 	int from, to;
-	int width = fig->textura->width()-1;
-	int height = fig->textura->height()-1;
+	int width = fig->textura->width() - 1;
+	int height = fig->textura->height() - 1;
+	float w0 = 0, w1 = 0, w2 = 0;
 	for (int i = smallest_y; i < second_y; i++) {
-		//DrawLine((int)round(smallest_y_x), i, (int)round( max_y_x),i,color);
 		from = (int)round(smallest_y_x);
 		to = (int)round(max_y_x);
 		if (to < from)
 		{
 			std::swap(to, from);
 		}
-		
-		for (from; from <= to; from++) {
-			auto N = AproxNormValue(x0, y0, N1, x1, y1, N2, x2, y2, N3, from, i);
-			glm::vec3 C;
-			glm::vec3 to = AproxNormValue(x0, y0, A0, x1, y1, A1, x2, y2, A2, from, i);
-			glm::vec3 texture_coord = AproxNormValue(x0, y0, { tri->texture_cord[0],0 }, x1, y1, { tri->texture_cord[1],0 }, x2, y2, { tri->texture_cord[2],0 }, from, i);
-			texture_coord.x = texture_coord.x > 1 ? 1 : texture_coord.x;
-			texture_coord.y = texture_coord.y > 1 ? 1 : texture_coord.y;
-			texture_coord.x = texture_coord.x < 0 ? 0 : texture_coord.x;
-			texture_coord.y = texture_coord.y < 0 ? 0 : texture_coord.y;
-			glm::u8vec3 values;
-			fig->textura->get_pixel((unsigned int)round(texture_coord.x*width), (unsigned int)round(texture_coord.y*height),values.r,values.g,values.b) ;
-			glm::vec3 col = glm::vec3(values) / 255.0f;
-			C = Ia * ka;
-			for (auto I : *lights) {
-				if (fig->draw_texture) {
 
+		for (from; from <= to; from++) {
+			AproxwVals(x0, y0, x1, y1, x2, y2, from, i, w0, w1, w2);
+			auto N = AproxNormValue(N1, N2, N3, w0, w1, w2);
+			glm::vec3 C;
+			glm::vec3 to = AproxNormValue(A0, A1, A2, w0, w1, w2);
+			C = Ia * ka;
+			if (fig->draw_texture) {
+				glm::vec3 texture_coord = AproxNormValue({ tri->texture_cord[0],0 }, { tri->texture_cord[1],0 }, { tri->texture_cord[2],0 }, w0, w1, w2);
+				texture_coord.x = texture_coord.x > 1 ? 1 : texture_coord.x;
+				texture_coord.y = texture_coord.y > 1 ? 1 : texture_coord.y;
+				texture_coord.x = texture_coord.x < 0 ? 0 : texture_coord.x;
+				texture_coord.y = texture_coord.y < 0 ? 0 : texture_coord.y;
+				glm::u8vec3 values;
+				fig->textura->get_pixel((unsigned int)round(texture_coord.x * width), (unsigned int)round(texture_coord.y * height), values.r, values.g, values.b);
+				glm::vec3 col = glm::vec3(values) / 255.0f;
+				for (auto I : *lights) {
 					C += I->CalculateValueLightVal(to, N, col, fig->ks, fig->n, cam->pos);
-				}else
-				C += I->CalculateValueLightVal(to, N, { fig->kd,fig->kd,fig->kd }, fig->ks, fig->n, cam->pos);
+				}
 			}
+			else
+				for (auto I : *lights) {
+					C += I->CalculateValueLightVal(to, N, { fig->kd,fig->kd,fig->kd }, fig->ks, fig->n, cam->pos);
+				}
 			C *= 255;
 			C.x = C.x > 255 ? 255 : C.x;
 			C.y = C.y > 255 ? 255 : C.y;
@@ -574,41 +493,40 @@ void FrameBuffer::FillTriangle(int x0, int y0, float z0, int x1, int y1, float z
 			C.x = C.x < 0 ? 0 : C.x;
 			C.y = C.y < 0 ? 0 : C.y;
 			C.z = C.z < 0 ? 0 : C.z;
-			int color = RGB((int)C.x, (int)C.y, (int)C.z);
-			SetPixel(from, i, AproxZValue(x0, y0, z0, x1, y1, z1, x2, y2, z2, from, i), color);
+			SetPixel(from, i, AproxZValue(z0, z1, z2, w0, w1, w2), RGB((int)C.x, (int)C.y, (int)C.z));
 		}
 		smallest_y_x = smallest_y_x + smallest_m;
 		max_y_x = max_y_x + max_m;
 	}
 	for (int i = second_y; i < max_y; i++) {
-		//DrawLine((int)round(second_y_x), i, (int)round(max_y_x), i, color);
 		from = (int)round(second_y_x);
 		to = (int)round(max_y_x);
 		if (to < from)
 		{
 			std::swap(to, from);
 		}
-		for (from; from < to; from++) {
+		for (from; from <= to; from++) {
 			auto N = AproxNormValue(x0, y0, N1, x1, y1, N2, x2, y2, N3, from, i);
 			glm::vec3 C;
 			glm::vec3 to = AproxNormValue(x0, y0, A0, x1, y1, A1, x2, y2, A2, from, i);
-			glm::vec3 texture_coord = AproxNormValue(x0, y0, { tri->texture_cord[0],0 }, x1, y1, { tri->texture_cord[1],0 }, x2, y2, { tri->texture_cord[2],0 }, from, i);
-			texture_coord.x = texture_coord.x > 1 ? 1 : texture_coord.x;
-			texture_coord.y = texture_coord.y > 1 ? 1 : texture_coord.y;
-			texture_coord.x = texture_coord.x < 0 ? 0 : texture_coord.x;
-			texture_coord.y = texture_coord.y < 0 ? 0 : texture_coord.y;
-			glm::u8vec3 values;
-			fig->textura->get_pixel((unsigned int)round(texture_coord.x* width), (unsigned int)round(texture_coord.y* height), values.r, values.g, values.b);
-			glm::vec3 col = glm::vec3(values) / 255.0f;
 			C = Ia * ka;
-			for (auto I : *lights) {
-				if (fig->draw_texture) {
-
+			if (fig->draw_texture) {
+				glm::vec3 texture_coord = AproxNormValue(x0, y0, { tri->texture_cord[0],0 }, x1, y1, { tri->texture_cord[1],0 }, x2, y2, { tri->texture_cord[2],0 }, from, i);
+				texture_coord.x = texture_coord.x > 1 ? 1 : texture_coord.x;
+				texture_coord.y = texture_coord.y > 1 ? 1 : texture_coord.y;
+				texture_coord.x = texture_coord.x < 0 ? 0 : texture_coord.x;
+				texture_coord.y = texture_coord.y < 0 ? 0 : texture_coord.y;
+				glm::u8vec3 values;
+				fig->textura->get_pixel((unsigned int)round(texture_coord.x * width), (unsigned int)round(texture_coord.y * height), values.r, values.g, values.b);
+				glm::vec3 col = glm::vec3(values) / 255.0f;
+				for (auto I : *lights) {
 					C += I->CalculateValueLightVal(to, N, col, fig->ks, fig->n, cam->pos);
 				}
-				else
-				C += I->CalculateValueLightVal(to, N, { fig->kd,fig->kd,fig->kd }, fig->ks, fig->n, cam->pos);
 			}
+			else
+				for (auto I : *lights) {
+					C += I->CalculateValueLightVal(to, N, { fig->kd,fig->kd,fig->kd }, fig->ks, fig->n, cam->pos);
+				}
 			C *= 255;
 			C.x = C.x > 255 ? 255 : C.x;
 			C.y = C.y > 255 ? 255 : C.y;
@@ -616,8 +534,7 @@ void FrameBuffer::FillTriangle(int x0, int y0, float z0, int x1, int y1, float z
 			C.x = C.x < 0 ? 0 : C.x;
 			C.y = C.y < 0 ? 0 : C.y;
 			C.z = C.z < 0 ? 0 : C.z;
-			int color = RGB((int)C.x, (int)C.y, (int)C.z);
-			SetPixel(from, i, AproxZValue(x0, y0, z0, x1, y1, z1, x2, y2, z2, from, i), color);
+			SetPixel(from, i, AproxZValue(x0, y0, z0, x1, y1, z1, x2, y2, z2, from, i), RGB((int)C.x, (int)C.y, (int)C.z));
 		}
 		second_y_x = (second_y_x + second_m);
 		max_y_x = (max_y_x + max_m);
