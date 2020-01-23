@@ -9,6 +9,13 @@
 #include <math.h>
 class Figure; 
 
+struct TriangleParams {
+	glm::vec3 N[3];
+	glm::vec3 B[3];
+	glm::vec3 T[3];
+	glm::vec3 A[3];
+};
+
 static class Helper {
 public:
 	static glm::mat4 createRotationMatrix(float x_angle, float y_angle, float z_angle, Figure* fig);

@@ -315,9 +315,9 @@ int main(int, char**)
 	//glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
 	texture = bitmap_image("texture.bmp");
+	normal_texture = bitmap_image("cheek-edge.bmp");
 
-
-	if (!texture) {
+	if (!texture || ! normal_texture) {
 		int i;
 		i = 0;;
 	}
@@ -393,6 +393,7 @@ int main(int, char**)
 	cub2.translate = Helper::createTranslationMatrix(-3.0f, 0, 0);
 
 	sp.textura = &texture;
+	sp.normal_textura = &normal_texture;
 	//figures.push_back(&cub);
 	//figures.push_back(&cub2);
 	figures.push_back(&sp);

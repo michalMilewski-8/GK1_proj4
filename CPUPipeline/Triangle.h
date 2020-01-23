@@ -30,6 +30,8 @@ public:
 	glm::vec2 texture_cord[3] = { {0,0},{1,0},{1,1} };
 
 	void DrawTriangle(bool backface_culling, bool paint_triangles, bool z_bufferng, bool perspective_correction, bool draw_edges, bool draw_color, FrameBuffer& fb, int color, Camera* cam);
+	void DrawTriangleInternalWOClipping(bool backface_culling, bool paint_triangles, bool z_bufferng, bool perspective_correction, bool draw_edges, bool draw_color, FrameBuffer& fb, int color, Camera* cam);
+	void DrawTriangleInternalClipping(bool backface_culling, bool paint_triangles, bool z_bufferng, bool perspective_correction, bool draw_edges, bool draw_color, FrameBuffer& fb, int color, Camera* cam);
 	void CalculatePointsAfterTransformation();
 	void CalculateNormalVectors();
 	float CalculateSideValue();

@@ -400,7 +400,8 @@ void FrameBuffer::FillTriangle(int x0, int y0, int x1, int y1, int x2, int y2, i
 	}
 }
 
-void FrameBuffer::FillTriangle(int x0, int y0, float z0, int x1, int y1, float z1, int x2, int y2, float z2, int color)
+void FrameBuffer::FillTriangle(int x0, int y0, float z0, int x1, int y1, float z1,
+	int x2, int y2, float z2, int color)
 {
 	int max_y = 0;
 	int second_y = 0;
@@ -440,7 +441,10 @@ void FrameBuffer::FillTriangle(int x0, int y0, float z0, int x1, int y1, float z
 	}
 }
 
-void FrameBuffer::FillTriangle(int x0, int y0, float z0, int x1, int y1, float z1, int x2, int y2, float z2, glm::vec3 N1, glm::vec3 N2, glm::vec3 N3, glm::vec3 A0, glm::vec3 A1, glm::vec3 A2, Figure* fig, Camera* cam, Triangle* tri)
+void FrameBuffer::FillTriangle(int x0, int y0, float z0, int x1, int y1, float z1,
+	int x2, int y2, float z2, glm::vec3 N1, glm::vec3 N2, glm::vec3 N3,
+	glm::vec3 A0, glm::vec3 A1, glm::vec3 A2, Figure* fig, Camera* cam,
+	Triangle* tri)
 {
 	int max_y = 0;
 	int second_y = 0;
@@ -506,12 +510,13 @@ void FrameBuffer::FillTriangle(int x0, int y0, float z0, int x1, int y1, float z
 			std::swap(to, from);
 		}
 		for (from; from <= to; from++) {
-			auto N = AproxNormValue(x0, y0, N1, x1, y1, N2, x2, y2, N3, from, i);
+			AproxwVals(x0, y0, x1, y1, x2, y2, from, i, w0, w1, w2);
+			auto N = AproxNormValue(N1, N2, N3, w0, w1, w2);
 			glm::vec3 C;
-			glm::vec3 to = AproxNormValue(x0, y0, A0, x1, y1, A1, x2, y2, A2, from, i);
+			glm::vec3 to = AproxNormValue(A0, A1, A2, w0, w1, w2);
 			C = Ia * ka;
 			if (fig->draw_texture) {
-				glm::vec3 texture_coord = AproxNormValue(x0, y0, { tri->texture_cord[0],0 }, x1, y1, { tri->texture_cord[1],0 }, x2, y2, { tri->texture_cord[2],0 }, from, i);
+				glm::vec3 texture_coord = AproxNormValue({ tri->texture_cord[0],0 }, { tri->texture_cord[1],0 }, { tri->texture_cord[2],0 }, w0, w1, w2);
 				texture_coord.x = texture_coord.x > 1 ? 1 : texture_coord.x;
 				texture_coord.y = texture_coord.y > 1 ? 1 : texture_coord.y;
 				texture_coord.x = texture_coord.x < 0 ? 0 : texture_coord.x;
@@ -534,7 +539,152 @@ void FrameBuffer::FillTriangle(int x0, int y0, float z0, int x1, int y1, float z
 			C.x = C.x < 0 ? 0 : C.x;
 			C.y = C.y < 0 ? 0 : C.y;
 			C.z = C.z < 0 ? 0 : C.z;
-			SetPixel(from, i, AproxZValue(x0, y0, z0, x1, y1, z1, x2, y2, z2, from, i), RGB((int)C.x, (int)C.y, (int)C.z));
+			SetPixel(from, i, AproxZValue(z0, z1, z2, w0, w1, w2), RGB((int)C.x, (int)C.y, (int)C.z));
+		}
+		second_y_x = (second_y_x + second_m);
+		max_y_x = (max_y_x + max_m);
+	}
+}
+
+void FrameBuffer::FillTriangle(int x0, int y0, float z0, int x1, int y1, float z1, int x2, int y2, float z2, TriangleParams params, Figure* fig, Camera* cam, Triangle* tri)
+{
+	int max_y = 0;
+	int second_y = 0;
+	int smallest_y = 0;
+	float max_y_x = 0, second_y_x = 0, smallest_y_x = 0;
+	float max_m = 0, smallest_m = 0, second_m = 0;
+
+	glm::vec3 N1 = params.N[0];
+	glm::vec3 N2 = params.N[1];
+	glm::vec3 N3 = params.N[2];
+
+	glm::vec3 A0 = params.A[0];
+	glm::vec3 A1 = params.A[1];
+	glm::vec3 A2 = params.A[2];
+
+	glm::vec3 B0 = params.B[0];
+	glm::vec3 B1 = params.B[1];
+	glm::vec3 B2 = params.B[2];
+
+	glm::vec3 T0 = params.T[0];
+	glm::vec3 T1 = params.T[1];
+	glm::vec3 T2 = params.T[2];
+
+
+	simpleSort(x0, y0, x1, y1, x2, y2, max_y,
+		second_y, smallest_y, max_y_x, second_y_x,
+		smallest_y_x, max_m, smallest_m, second_m);
+	int from, to;
+	int width = fig->textura->width() - 1;
+	int height = fig->textura->height() - 1;
+	int norm_width = fig->normal_textura->width() -1;
+	int norm_height = fig->normal_textura->height() - 1;
+	float w0 = 0, w1 = 0, w2 = 0;
+	for (int i = smallest_y; i < second_y; i++) {
+		from = (int)round(smallest_y_x);
+		to = (int)round(max_y_x);
+		if (to < from)
+		{
+			std::swap(to, from);
+		}
+
+		for (from; from <= to; from++) {
+			AproxwVals(x0, y0, x1, y1, x2, y2, from, i, w0, w1, w2);
+			auto N = AproxNormValue(N1, N2, N3, w0, w1, w2);
+			auto B = AproxNormValue(B0, B1, B2, w0, w1, w2);
+			auto T = AproxNormValue(T0, T1, T2, w0, w1, w2);
+			glm::mat3 TBN(T, B, N);
+			glm::vec3 texture_coord = AproxNormValue({ tri->texture_cord[0],0 }, { tri->texture_cord[1],0 }, { tri->texture_cord[2],0 }, w0, w1, w2);
+			texture_coord.x = texture_coord.x > 1 ? 1 : texture_coord.x;
+			texture_coord.y = texture_coord.y > 1 ? 1 : texture_coord.y;
+			texture_coord.x = texture_coord.x < 0 ? 0 : texture_coord.x;
+			texture_coord.y = texture_coord.y < 0 ? 0 : texture_coord.y;
+			glm::vec3 M;
+			glm::u8vec3  val;
+			fig->normal_textura->get_pixel((unsigned int)round(texture_coord.x * norm_width), (unsigned int)round(texture_coord.y * norm_height), val.r, val.g, val.b);
+			M = val;
+			M /= 255;
+			M *= 2;
+			M -= 1;
+			M = glm::normalize(M);
+			N = glm::normalize(TBN * M);
+			glm::vec3 C;
+			glm::vec3 to = AproxNormValue(A0, A1, A2, w0, w1, w2);
+			C = Ia * ka;
+			if (fig->draw_texture) {
+				glm::u8vec3 values;
+				fig->textura->get_pixel((unsigned int)round(texture_coord.x * width), (unsigned int)round(texture_coord.y * height), values.r, values.g, values.b);
+				glm::vec3 col = glm::vec3(values) / 255.0f;
+				for (auto I : *lights) {
+					C += I->CalculateValueLightVal(to, N, col, fig->ks, fig->n, cam->pos);
+				}
+			}
+			else
+				for (auto I : *lights) {
+					C += I->CalculateValueLightVal(to, N, { fig->kd,fig->kd,fig->kd }, fig->ks, fig->n, cam->pos);
+				}
+			C *= 255;
+			C.x = C.x > 255 ? 255 : C.x;
+			C.y = C.y > 255 ? 255 : C.y;
+			C.z = C.z > 255 ? 255 : C.z;
+			C.x = C.x < 0 ? 0 : C.x;
+			C.y = C.y < 0 ? 0 : C.y;
+			C.z = C.z < 0 ? 0 : C.z;
+			SetPixel(from, i, AproxZValue(z0, z1, z2, w0, w1, w2), RGB((int)C.x, (int)C.y, (int)C.z));
+		}
+		smallest_y_x = smallest_y_x + smallest_m;
+		max_y_x = max_y_x + max_m;
+	}
+	for (int i = second_y; i < max_y; i++) {
+		from = (int)round(second_y_x);
+		to = (int)round(max_y_x);
+		if (to < from)
+		{
+			std::swap(to, from);
+		}
+		for (from; from <= to; from++) {
+			AproxwVals(x0, y0, x1, y1, x2, y2, from, i, w0, w1, w2);
+			auto N = AproxNormValue(N1, N2, N3, w0, w1, w2);
+			auto B = AproxNormValue(B0, B1, B2, w0, w1, w2);
+			auto T = AproxNormValue(T0, T1, T2, w0, w1, w2);
+			glm::mat3 TBN(T, B, N);
+			glm::vec3 texture_coord = AproxNormValue({ tri->texture_cord[0],0 }, { tri->texture_cord[1],0 }, { tri->texture_cord[2],0 }, w0, w1, w2);
+			texture_coord.x = texture_coord.x > 1 ? 1 : texture_coord.x;
+			texture_coord.y = texture_coord.y > 1 ? 1 : texture_coord.y;
+			texture_coord.x = texture_coord.x < 0 ? 0 : texture_coord.x;
+			texture_coord.y = texture_coord.y < 0 ? 0 : texture_coord.y;
+			glm::vec3 M;
+			glm::u8vec3  val;
+			fig->normal_textura->get_pixel((unsigned int)round(texture_coord.x * norm_width), (unsigned int)round(texture_coord.y * norm_height), val.r, val.g, val.b);
+			M = val;
+			M /= 255;
+			M *= 2;
+			M -= 1;
+			M = glm::normalize(M);
+			N = glm::normalize(TBN * M);
+			glm::vec3 C;
+			glm::vec3 to = AproxNormValue(A0, A1, A2, w0, w1, w2);
+			C = Ia * ka;
+			if (fig->draw_texture) {
+				glm::u8vec3 values;
+				fig->textura->get_pixel((unsigned int)round(texture_coord.x * width), (unsigned int)round(texture_coord.y * height), values.r, values.g, values.b);
+				glm::vec3 col = glm::vec3(values) / 255.0f;
+				for (auto I : *lights) {
+					C += I->CalculateValueLightVal(to, N, col, fig->ks, fig->n, cam->pos);
+				}
+			}
+			else
+				for (auto I : *lights) {
+					C += I->CalculateValueLightVal(to, N, { fig->kd,fig->kd,fig->kd }, fig->ks, fig->n, cam->pos);
+				}
+			C *= 255;
+			C.x = C.x > 255 ? 255 : C.x;
+			C.y = C.y > 255 ? 255 : C.y;
+			C.z = C.z > 255 ? 255 : C.z;
+			C.x = C.x < 0 ? 0 : C.x;
+			C.y = C.y < 0 ? 0 : C.y;
+			C.z = C.z < 0 ? 0 : C.z;
+			SetPixel(from, i, AproxZValue(z0, z1, z2, w0, w1, w2), RGB((int)C.x, (int)C.y, (int)C.z));
 		}
 		second_y_x = (second_y_x + second_m);
 		max_y_x = (max_y_x + max_m);

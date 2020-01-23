@@ -37,8 +37,8 @@ void Figure::ModMenu(int counter, Figure*& to_delete)
 }
 
 void Figure::Transform(glm::mat4 proj, glm::mat4 view, glm::mat4 view_port) {
-	transformation = view_port * proj * view * scale * translate * rotate * center;
-	trans_without_viewport = proj * view * scale * translate * rotate * center;
 	model_matrix = scale * translate * rotate * center;
+	trans_without_viewport = proj * view * model_matrix;
+	transformation = view_port * trans_without_viewport;
 	re_model_matrix = glm::inverse(glm::transpose(model_matrix));
 }
