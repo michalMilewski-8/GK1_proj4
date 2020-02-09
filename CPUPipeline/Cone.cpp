@@ -1,6 +1,9 @@
 #include "../Cone.h"
 #include "imgui.h"
 
+static const glm::vec3 up(0,-1,0);
+static const glm::vec3 up2(0,-1,0.001);
+
 Cone::Cone()
 {
 	type = Type::Cone_;
@@ -69,9 +72,7 @@ void Cone::CalculateVerticesAndTriangles()
 
 void Cone::CalculateNormalVectors(unsigned int first, unsigned int second, unsigned int third, Triangle* tri)
 {
-	tri->binormal_vectors.clear();
 	tri->normal_vectors.clear();
-	tri->tangential_vectors.clear();
 	auto one = vertices[first];
 	auto two = vertices[second];
 	auto three = vertices[third];
@@ -183,12 +184,29 @@ void Cone::CalculateNormalVectors(unsigned int first, unsigned int second, unsig
 		tri->normal_vectors.push_back(glm::vec4(two_normal.x, two_normal.y, two_normal.z, 0));
 		
 	}
+	tri->tangential_vectors.clear();
+	tri->binormal_vectors.clear();
 
-	tri->tangential_vectors.push_back(tri->normal_vectors[1]);
-	tri->tangential_vectors.push_back(tri->normal_vectors[2]);
-	tri->tangential_vectors.push_back(tri->normal_vectors[0]);
+	glm::vec3 tmp;
+	for (int i = 0; i < 3; i++) {
+		if (tri->normal_vectors[i].x == 0 && tri->normal_vectors[i].z == 0) {
 
-	tri->binormal_vectors.push_back(tri->normal_vectors[2]);
-	tri->binormal_vectors.push_back(tri->normal_vectors[0]);
-	tri->binormal_vectors.push_back(tri->normal_vectors[1]);
+			tmp = glm::normalize(glm::cross(glm::vec3(tri->normal_vectors[i]),up2));
+			tri->tangential_vectors.push_back(glm::vec4(tmp.x, tmp.y, tmp.z, 0));
+		}
+		else {
+			tmp = glm::normalize(glm::cross(glm::vec3(tri->normal_vectors[i]),up));
+			tri->tangential_vectors.push_back(glm::vec4(tmp.x, tmp.y, tmp.z, 0));
+		}
+		tmp = glm::normalize(glm::cross(glm::vec3(tri->tangential_vectors[i]), glm::vec3(tri->normal_vectors[i])));
+		tri->binormal_vectors.push_back(glm::vec4(tmp.x, tmp.y, tmp.z, 0));
+	}
+
+	//tri->tangential_vectors.push_back(tri->normal_vectors[1]);
+	//tri->tangential_vectors.push_back(tri->normal_vectors[2]);
+	//tri->tangential_vectors.push_back(tri->normal_vectors[0]);
+
+	//tri->binormal_vectors.push_back(tri->normal_vectors[2]);
+	//tri->binormal_vectors.push_back(tri->normal_vectors[0]);
+	//tri->binormal_vectors.push_back(tri->normal_vectors[1]);
 }

@@ -110,7 +110,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 		cameraPos.y = lookAt.y + std::sin(-angle.y);
 		auto tmp = glm::normalize(lookAt - cameraPos );
 		//if (tmp.z * cameraFront.z < 0) cameraUp *= -1;
-	//	if (tmp.x * cameraFront.x < 0) cameraUp *= -1;
+		//if (tmp.x * cameraFront.x < 0) cameraUp *= -1;
 		//if (tmp.y * cameraFront.y < 0) cameraUp *= -1;
 		cameraFront = tmp ;
 	}
