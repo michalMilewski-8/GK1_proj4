@@ -184,11 +184,11 @@ void Cone::CalculateNormalVectors(unsigned int first, unsigned int second, unsig
 		
 	}
 
-	//tri->tangential_vectors.push_back(tri->normal_vectors[1]);
-	//tri->tangential_vectors.push_back(tri->normal_vectors[2]);
-	//tri->tangential_vectors.push_back(tri->normal_vectors[0]);
+	tri->tangential_vectors.push_back(tri->normal_vectors[1]);
+	tri->tangential_vectors.push_back(tri->normal_vectors[2]);
+	tri->tangential_vectors.push_back(tri->normal_vectors[0]);
 
-	//tri->binormal_vectors.push_back(tri->normal_vectors[2]);
-	//tri->binormal_vectors.push_back(tri->normal_vectors[0]);
-	//tri->binormal_vectors.push_back(tri->normal_vectors[1]);
+	tri->binormal_vectors.push_back(tri->normal_vectors[2]);
+	tri->binormal_vectors.push_back(tri->normal_vectors[0]);
+	tri->binormal_vectors.push_back(tri->normal_vectors[1]);
 }

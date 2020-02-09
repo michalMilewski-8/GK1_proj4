@@ -20,13 +20,13 @@
 
 #define DEFAULT_WIDTH 1280
 #define DEFAULT_HEIGHT 720
-#define PI 3.14
+#define EPS 0.0001
 
-glm::vec3 cameraPos, cameraFront, cameraUp;
-glm::vec3 def_cameraPos, def_cameraFront, def_cameraUp;
+glm::vec3 cameraPos, cameraFront, cameraUp, lookAt;
+glm::vec3 def_cameraPos, def_cameraFront, def_cameraUp, def_lookAt;
 float fov = 30.f;
 glm::vec2 mousePosOld;
-glm::vec2 angle = glm::vec2(-M_PI / 2,0 );
+glm::vec2 angle = glm::vec2(-M_PI / 2, 0);
 glm::vec2 scroolPosOld;
 Camera* camera = nullptr;
 bool show_demo_window = false;
@@ -58,22 +58,35 @@ void processInput(GLFWwindow* window, float deltaTime)
 		glfwSetWindowShouldClose(window, true);
 
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+	{
 		cameraPos.z -= 0.01;
-
+		lookAt.z -= 0.01;
+	}
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+	{
 		cameraPos.z += 0.01;
-
+		lookAt.z += 0.01;
+	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+	{
 		cameraPos.x += 0.01;
-
+		lookAt.x += 0.01;
+	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+	{
 		cameraPos.x -= 0.01;
-
+		lookAt.x -= 0.01;
+	}
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+	{
 		cameraPos.y -= 0.01;
-
+		lookAt.y -= 0.01;
+	}
 	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+	{
 		cameraPos.y += 0.01;
+		lookAt.y += 0.01;
+	}
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -87,12 +100,19 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
 	{
 		glm::vec2 diff = mousePos - mousePosOld;
-		diff.x /= 1000;
-		diff.y /= 1000;
+		diff.x /= 100;
+		diff.y /= 100;
 		angle += diff;
-		cameraFront.x = std::cos(angle.y) * std::cos(angle.x);
-		cameraFront.z = std::cos(angle.y) * std::sin(angle.x) - 1;
-		cameraFront.y = std::sin(-angle.y);
+		if (angle.y > M_PI_2) angle.y = M_PI_2-EPS;
+		if (angle.y < -M_PI_2) angle.y = -M_PI_2+EPS;
+		cameraPos.x = lookAt.x + std::cos(angle.y) * std::cos(angle.x);
+		cameraPos.z = lookAt.z + -std::cos(angle.y) * std::sin(angle.x);
+		cameraPos.y = lookAt.y + std::sin(-angle.y);
+		auto tmp = glm::normalize(lookAt - cameraPos );
+		//if (tmp.z * cameraFront.z < 0) cameraUp *= -1;
+	//	if (tmp.x * cameraFront.x < 0) cameraUp *= -1;
+		//if (tmp.y * cameraFront.y < 0) cameraUp *= -1;
+		cameraFront = tmp ;
 	}
 
 	mousePosOld = mousePos;
@@ -279,7 +299,7 @@ void CreateMenu(std::vector<Figure*>* figures, std::vector<Camera*>* cameras, st
 		{
 			Camera* cam = new Camera(def_cameraPos, def_cameraFront, def_cameraUp);
 			cam->SetViewport(0, 0, current_width, current_height);
-			cam->SetPerspective(fov, ((float)current_height / (float)current_width), 1, 100);
+			cam->SetPerspective(fov, ((float)current_height / (float)current_width), 0.1, 100);
 			cameras->push_back(cam);
 		}
 
@@ -400,10 +420,12 @@ int main(int, char**)
 
 	def_cameraPos = { 0,0,1 };
 	def_cameraFront = { 0,0,-1 };
+	def_lookAt = { 0,0,0 };
 	def_cameraUp = { 0,1,0 };
 
 	cameraPos = { 0,0,1 };
 	cameraFront = { 0,0,-1 };
+	lookAt = { 0,0,0 };
 	cameraUp = { 0,1,0 };
 
 	//TODO: initialize camera
@@ -413,7 +435,7 @@ int main(int, char**)
 
 	cam = new Camera(cameraPos, cameraFront, cameraUp);
 	cam->SetViewport(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
-	cam->SetPerspective(fov, ((float)DEFAULT_HEIGHT / (float)DEFAULT_WIDTH), 1, 100);
+	cam->SetPerspective(fov, ((float)DEFAULT_HEIGHT / (float)DEFAULT_WIDTH), 0.1, 100);
 	cameras.push_back(cam);
 	active_camera_index = 0;
 
@@ -444,10 +466,10 @@ int main(int, char**)
 		fb.ClearColor(0.1f, 0.15f, 0.15f);
 
 		cam->LookAt(cameraPos, cameraFront, cameraUp);
-		cam->SetPerspective(fov, ((float)current_height / (float)current_width), 1, 5);
+		cam->SetPerspective(fov, ((float)current_height / (float)current_width), 0.1, 5);
 		cam = cameras[active_camera_index];
 		cam->SetPosFrontUp(cameraPos, cameraFront, cameraUp);
-
+		//lookAt = cameraPos - cameraFront;
 		auto proj = cam->GetProjectionMatrix();
 		auto view = cam->GetWorldMatrix();
 		auto view_port = cam->GetViewPortMatrix();
