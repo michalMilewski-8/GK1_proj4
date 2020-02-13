@@ -60,57 +60,41 @@ void processInput(GLFWwindow* window, float deltaTime)
 
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 	{
-	/*	cameraPos.z -= 0.01;
-		lookAt.z -= 0.01;*/
-
 		cameraPos += cameraFront * 0.03f;
 		lookAt += cameraFront * 0.03f;
-
 	}
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 	{
-	/*	cameraPos.z += 0.01;
-		lookAt.z += 0.01;*/
-
 		cameraPos -= cameraFront * 0.03f;
 		lookAt -= cameraFront * 0.03f;
-
 	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 	{
-	/*	cameraPos.x += 0.01;
-		lookAt.x += 0.01;*/
-
 		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * 0.03f;
 		lookAt += glm::normalize(glm::cross(cameraFront, cameraUp)) * 0.03f;
 
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 	{
-	/*	cameraPos.x -= 0.01;
-		lookAt.x -= 0.01;*/
-
 		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * 0.03f;
 		lookAt -= glm::normalize(glm::cross(cameraFront, cameraUp)) * 0.03f;
 
 	}
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
 	{
-		//cameraPos.y -= 0.01;
-		//lookAt.y -= 0.01;
 		auto tmp = glm::normalize(cameraPos - lookAt);
 		auto new_up = glm::cross(cameraUp, tmp);
 		moving_up = glm::normalize(glm::cross(tmp, new_up));
+		
 		cameraPos += moving_up * 0.03f;
 		lookAt += moving_up * 0.03f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
 	{
-		//cameraPos.y += 0.01;
-		//lookAt.y += 0.01;
 		auto tmp = glm::normalize(cameraPos - lookAt);
 		auto new_up = glm::cross(cameraUp, tmp);
 		moving_up = glm::normalize(glm::cross(tmp, new_up));
+		
 		cameraPos -= moving_up * 0.03f;
 		lookAt -= moving_up * 0.03f;
 	}
@@ -132,13 +116,11 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 		angle += diff;
 		if (angle.y > M_PI_2) angle.y = M_PI_2-EPS;
 		if (angle.y < -M_PI_2) angle.y = -M_PI_2+EPS;
+
 		cameraPos.x = lookAt.x + std::cos(angle.y) * std::cos(angle.x);
 		cameraPos.z = lookAt.z + -std::cos(angle.y) * std::sin(angle.x);
 		cameraPos.y = lookAt.y + std::sin(-angle.y);
 
-		//if (tmp.z * cameraFront.z < 0) cameraUp *= -1;
-		//if (tmp.x * cameraFront.x < 0) cameraUp *= -1;
-		//if (tmp.y * cameraFront.y < 0) cameraUp *= -1;
 		cameraFront = glm::normalize(lookAt - cameraPos); ;
 	}
 
@@ -187,7 +169,6 @@ void ListFigures(std::vector<Figure*>* figures) {
 	if (to_delete != nullptr) {
 		auto it = std::find(figures->begin(), figures->end(), to_delete);
 		figures->erase(it);
-		//delete to_delete;
 	}
 }
 
@@ -207,7 +188,6 @@ void ListCameras(std::vector<Camera*>* cameras) {
 		}
 	}
 	if (cam_to_delete > 0) {
-		//delete (*cameras)[cam_to_delete];
 		cameras->erase(cameras->begin() + cam_to_delete);
 		if (active_camera_index == cam_to_delete) active_camera_index = 0;
 	}
@@ -250,7 +230,6 @@ void ListLights(std::vector<Light*>* lights) {
 		}
 	}
 	if (to_delete >= 0) {
-		//delete (*cameras)[cam_to_delete];
 		lights->erase(lights->begin() + to_delete);
 	}
 }
@@ -264,9 +243,9 @@ void CreateMenu(std::vector<Figure*>* figures, std::vector<Camera*>* cameras, st
 		static float f = 0.0f;
 		static int counter = 0;
 
-		ImGui::Begin("Main Menu");                          // Create a window called "Hello, world!" and append into it.
+		ImGui::Begin("Main Menu");
 
-		ImGui::Text("In this menu you can list, select, move, add figures, cameras and lights");               // Display some text (you can use a format strings too)
+		ImGui::Text("In this menu you can list, select, move, add figures, cameras and lights");
 		ImGui::Checkbox("Paint triangles", &paint_triangles);
 		ImGui::Checkbox("Backface culling", &backface_culling);
 		ImGui::Checkbox("Z-buffering", &z_bufferng);
@@ -290,7 +269,7 @@ void CreateMenu(std::vector<Figure*>* figures, std::vector<Camera*>* cameras, st
 			ListLights(lights);
 		}
 
-		if (ImGui::Button("Add Cube"))// Buttons return true when clicked (most widgets return true when edited/activated)
+		if (ImGui::Button("Add Cube"))
 		{
 			Cube* tmp = new Cube();
 			tmp->center = Helper::createTranslationMatrix(-0.5f, -0.5f, -0.5f);
@@ -299,7 +278,7 @@ void CreateMenu(std::vector<Figure*>* figures, std::vector<Camera*>* cameras, st
 			tmp->normal_textura = &normal_texture;
 			figures->push_back(tmp);
 		}
-		if (ImGui::Button("Add Sphere"))// Buttons return true when clicked (most widgets return true when edited/activated)
+		if (ImGui::Button("Add Sphere"))
 		{
 			Sphere* tmp = new Sphere();
 			tmp->scale = Helper::createScaleMatrix(0.2f, 0.2f, 0.2f);
@@ -308,7 +287,7 @@ void CreateMenu(std::vector<Figure*>* figures, std::vector<Camera*>* cameras, st
 			figures->push_back(tmp);
 
 		}
-		if (ImGui::Button("Add Cone"))// Buttons return true when clicked (most widgets return true when edited/activated)
+		if (ImGui::Button("Add Cone"))
 		{
 			Cone* tmp = new Cone();
 			tmp->scale = Helper::createScaleMatrix(0.2f, 0.2f, 0.2f);
@@ -316,7 +295,7 @@ void CreateMenu(std::vector<Figure*>* figures, std::vector<Camera*>* cameras, st
 			tmp->normal_textura = &normal_texture;
 			figures->push_back(tmp);
 		}
-		if (ImGui::Button("Add Cylinder"))// Buttons return true when clicked (most widgets return true when edited/activated)
+		if (ImGui::Button("Add Cylinder"))
 		{
 			Cylinder* tmp = new Cylinder();
 			tmp->scale = Helper::createScaleMatrix(0.2f, 0.2f, 0.2f);
@@ -325,7 +304,7 @@ void CreateMenu(std::vector<Figure*>* figures, std::vector<Camera*>* cameras, st
 			figures->push_back(tmp);
 		}
 
-		if (ImGui::Button("Add Camera"))// Buttons return true when clicked (most widgets return true when edited/activated)
+		if (ImGui::Button("Add Camera"))
 		{
 			Camera* cam = new Camera(def_cameraPos, def_cameraFront, def_cameraUp);
 			cam->SetViewport(0, 0, current_width, current_height);
@@ -333,7 +312,7 @@ void CreateMenu(std::vector<Figure*>* figures, std::vector<Camera*>* cameras, st
 			cameras->push_back(cam);
 		}
 
-		if (ImGui::Button("Add Light"))// Buttons return true when clicked (most widgets return true when edited/activated)
+		if (ImGui::Button("Add Light"))
 		{
 			Light* light = new Light();
 			lights->push_back(light);
@@ -371,8 +350,6 @@ int main(int, char**)
 		int i;
 		i = 0;;
 	}
-
-	//createMenu();
 
 	// Create window with graphics context
 	GLFWwindow* window = glfwCreateWindow(DEFAULT_WIDTH, DEFAULT_HEIGHT, "CPU Render Pipeline", NULL, NULL);
@@ -423,8 +400,6 @@ int main(int, char**)
 	std::vector<Light*> lights;
 
 	Cube cub = Cube();
-	Cube cub2 = Cube();
-
 	Sphere sp = Sphere();
 	Cylinder cy = Cylinder();
 	Cone co = Cone();
@@ -432,9 +407,7 @@ int main(int, char**)
 	cub.center = Helper::createTranslationMatrix(-0.5f, -0.5f, -0.5f);
 	cub.scale = Helper::createScaleMatrix(0.1f, 0.1f, 0.1f);
 	cub.translate = Helper::createTranslationMatrix(1.0f, 0, 1.0f);
-	cub2.translate = Helper::createTranslationMatrix(-1.0f, 0, 0);
-	cub2.center = Helper::createTranslationMatrix(-0.5f, -0.5f, -0.5f);;
-	cub2.scale = Helper::createScaleMatrix(0.2f, 0.2f, 0.2f);
+
 
 	sp.scale = Helper::createScaleMatrix(0.1f, 0.1f, 0.1f);
 	cy.scale = Helper::createScaleMatrix(0.1f, 0.1f, 0.1f);
@@ -442,7 +415,6 @@ int main(int, char**)
 	co.scale = Helper::createScaleMatrix(0.1f, 0.1f, 0.1f);
 	co.translate = Helper::createTranslationMatrix(2.5f, 0.1f, 0.1f);
 
-	cub2.translate = Helper::createTranslationMatrix(-3.0f, 0, 0);
 
 	sp.textura = &texture;
 	sp.normal_textura = &normal_texture;
@@ -452,8 +424,7 @@ int main(int, char**)
 	co.normal_textura = &normal_texture;
 	cy.textura = &texture;
 	cy.normal_textura = &normal_texture;
-	//figures.push_back(&cub);
-	//figures.push_back(&cub2);
+
 	figures.push_back(&sp);
 	figures.push_back(&cub);
 	figures.push_back(&co);
