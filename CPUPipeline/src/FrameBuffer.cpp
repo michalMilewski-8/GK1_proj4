@@ -488,7 +488,7 @@ void FrameBuffer::FillTriangle(int x0, int y0, float z0, int x1, int y1, float z
 			}
 			else
 				for (auto I : *lights) {
-					C += I->CalculateValueLightVal(to, N, { fig->kd,fig->kd,fig->kd }, fig->ks, fig->n, cam->pos);
+					C += I->CalculateValueLightVal(to, N, { fig->kd[0],fig->kd[1],fig->kd[2] }, fig->ks, fig->n, cam->pos);
 				}
 			C *= 255;
 			C.x = C.x > 255 ? 255 : C.x;
@@ -530,7 +530,7 @@ void FrameBuffer::FillTriangle(int x0, int y0, float z0, int x1, int y1, float z
 			}
 			else
 				for (auto I : *lights) {
-					C += I->CalculateValueLightVal(to, N, { fig->kd,fig->kd,fig->kd }, fig->ks, fig->n, cam->pos);
+					C += I->CalculateValueLightVal(to, N, { fig->kd[0],fig->kd[1],fig->kd[2] }, fig->ks, fig->n, cam->pos);
 				}
 			C *= 255;
 			C.x = C.x > 255 ? 255 : C.x;
@@ -621,7 +621,7 @@ void FrameBuffer::FillTriangle(int x0, int y0, float z0, int x1, int y1, float z
 			}
 			else
 				for (auto I : *lights) {
-					C += I->CalculateValueLightVal(to, N, { fig->kd,fig->kd,fig->kd }, fig->ks, fig->n, cam->pos);
+					C += I->CalculateValueLightVal(to, N, { fig->kd[0],fig->kd[1],fig->kd[2] }, fig->ks, fig->n, cam->pos);
 				}
 			C *= 255;
 			C.x = C.x > 255 ? 255 : C.x;
@@ -675,7 +675,7 @@ void FrameBuffer::FillTriangle(int x0, int y0, float z0, int x1, int y1, float z
 			}
 			else
 				for (auto I : *lights) {
-					C += I->CalculateValueLightVal(to, N, { fig->kd,fig->kd,fig->kd }, fig->ks, fig->n, cam->pos);
+					C += I->CalculateValueLightVal(to, N, { fig->kd[0],fig->kd[1],fig->kd[2] }, fig->ks, fig->n, cam->pos);
 				}
 			C *= 255;
 			C.x = C.x > 255 ? 255 : C.x;

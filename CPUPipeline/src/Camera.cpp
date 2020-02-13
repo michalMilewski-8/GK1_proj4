@@ -79,3 +79,9 @@ void Camera::SetPosFrontUp(glm::vec3& pos, glm::vec3& front, glm::vec3& up)
 	front = this->front;
 	up = this->up;
 }
+
+void Camera::SetAngles(float& x, float& y)
+{
+	x = this->x;
+	y = this->y;
+}

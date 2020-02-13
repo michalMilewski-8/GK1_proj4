@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <glad/glad.h>
-#include <GL/glut.h>
 #include <GLFW/glfw3.h>
 
 #include "FrameBuffer.h"
@@ -22,9 +21,9 @@
 #define DEFAULT_HEIGHT 720
 #define EPS 0.0001
 
-glm::vec3 cameraPos, cameraFront, cameraUp, lookAt;
+glm::vec3 cameraPos, cameraFront, cameraUp, lookAt , moving_up;
 glm::vec3 def_cameraPos, def_cameraFront, def_cameraUp, def_lookAt;
-float fov = 30.f;
+float fov = -M_PI_2;
 glm::vec2 mousePosOld;
 glm::vec2 angle = glm::vec2(-M_PI / 2, 0);
 glm::vec2 scroolPosOld;
@@ -41,6 +40,8 @@ bool draw_color = true;
 bool perspective_correction = false;
 bool backface_culling = true;
 bool z_bufferng = true;
+float near_m = 0.1f;
+float far_m = 10.0f;
 Camera* cam;
 FrameBuffer* fram;
 bitmap_image texture;
@@ -59,33 +60,59 @@ void processInput(GLFWwindow* window, float deltaTime)
 
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 	{
-		cameraPos.z -= 0.01;
-		lookAt.z -= 0.01;
+	/*	cameraPos.z -= 0.01;
+		lookAt.z -= 0.01;*/
+
+		cameraPos += cameraFront * 0.03f;
+		lookAt += cameraFront * 0.03f;
+
 	}
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 	{
-		cameraPos.z += 0.01;
-		lookAt.z += 0.01;
+	/*	cameraPos.z += 0.01;
+		lookAt.z += 0.01;*/
+
+		cameraPos -= cameraFront * 0.03f;
+		lookAt -= cameraFront * 0.03f;
+
 	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 	{
-		cameraPos.x += 0.01;
-		lookAt.x += 0.01;
+	/*	cameraPos.x += 0.01;
+		lookAt.x += 0.01;*/
+
+		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * 0.03f;
+		lookAt += glm::normalize(glm::cross(cameraFront, cameraUp)) * 0.03f;
+
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 	{
-		cameraPos.x -= 0.01;
-		lookAt.x -= 0.01;
+	/*	cameraPos.x -= 0.01;
+		lookAt.x -= 0.01;*/
+
+		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * 0.03f;
+		lookAt -= glm::normalize(glm::cross(cameraFront, cameraUp)) * 0.03f;
+
 	}
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
 	{
-		cameraPos.y -= 0.01;
-		lookAt.y -= 0.01;
+		//cameraPos.y -= 0.01;
+		//lookAt.y -= 0.01;
+		auto tmp = glm::normalize(cameraPos - lookAt);
+		auto new_up = glm::cross(cameraUp, tmp);
+		moving_up = glm::normalize(glm::cross(tmp, new_up));
+		cameraPos += moving_up * 0.03f;
+		lookAt += moving_up * 0.03f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
 	{
-		cameraPos.y += 0.01;
-		lookAt.y += 0.01;
+		//cameraPos.y += 0.01;
+		//lookAt.y += 0.01;
+		auto tmp = glm::normalize(cameraPos - lookAt);
+		auto new_up = glm::cross(cameraUp, tmp);
+		moving_up = glm::normalize(glm::cross(tmp, new_up));
+		cameraPos -= moving_up * 0.03f;
+		lookAt -= moving_up * 0.03f;
 	}
 }
 
@@ -108,11 +135,11 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 		cameraPos.x = lookAt.x + std::cos(angle.y) * std::cos(angle.x);
 		cameraPos.z = lookAt.z + -std::cos(angle.y) * std::sin(angle.x);
 		cameraPos.y = lookAt.y + std::sin(-angle.y);
-		auto tmp = glm::normalize(lookAt - cameraPos );
+
 		//if (tmp.z * cameraFront.z < 0) cameraUp *= -1;
 		//if (tmp.x * cameraFront.x < 0) cameraUp *= -1;
 		//if (tmp.y * cameraFront.y < 0) cameraUp *= -1;
-		cameraFront = tmp ;
+		cameraFront = glm::normalize(lookAt - cameraPos); ;
 	}
 
 	mousePosOld = mousePos;
@@ -120,8 +147,10 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	if (fov >= 0.0f || yoffset >= 0)
 		fov += yoffset / 10;
+
+	if (fov > -0.1f) fov = -0.1f;
+	if (fov < -M_PI) fov = -M_PI+0.01f;
 }
 
 void timeMeasurement(GLFWwindow* win, double& deltaTime, double& currentTime)
@@ -165,6 +194,9 @@ void ListFigures(std::vector<Figure*>* figures) {
 void ListCameras(std::vector<Camera*>* cameras) {
 	char buff[500];
 	int cam_to_delete = -1;
+	ImGui::SliderFloat("Near", &near_m, 0.1f, 10.0f);
+	ImGui::SliderFloat("Far", &far_m, 0.1f, 10.0f);
+	if (far_m <= near_m) far_m = near_m + 0.1f;
 	for (int i = 0; i < cameras->size(); i++) {
 		sprintf_s(buff, 500, "Camera #%d", i);
 		if (ImGui::TreeNode(buff)) {
@@ -235,9 +267,7 @@ void CreateMenu(std::vector<Figure*>* figures, std::vector<Camera*>* cameras, st
 		ImGui::Begin("Main Menu");                          // Create a window called "Hello, world!" and append into it.
 
 		ImGui::Text("In this menu you can list, select, move, add figures, cameras and lights");               // Display some text (you can use a format strings too)
-		ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
 		ImGui::Checkbox("Paint triangles", &paint_triangles);
-		ImGui::Checkbox("Correct perspective", &perspective_correction);
 		ImGui::Checkbox("Backface culling", &backface_culling);
 		ImGui::Checkbox("Z-buffering", &z_bufferng);
 		ImGui::Checkbox("Draw Lights", &draw_color);
@@ -299,7 +329,7 @@ void CreateMenu(std::vector<Figure*>* figures, std::vector<Camera*>* cameras, st
 		{
 			Camera* cam = new Camera(def_cameraPos, def_cameraFront, def_cameraUp);
 			cam->SetViewport(0, 0, current_width, current_height);
-			cam->SetPerspective(fov, ((float)current_height / (float)current_width), 0.1, 100);
+			cam->SetPerspective(fov, ((float)current_height / (float)current_width), near_m, far_m);
 			cameras->push_back(cam);
 		}
 
@@ -400,23 +430,34 @@ int main(int, char**)
 	Cone co = Cone();
 
 	cub.center = Helper::createTranslationMatrix(-0.5f, -0.5f, -0.5f);
-	cub.scale = Helper::createScaleMatrix(0.2f, 0.2f, 0.2f);
-	cub.translate = Helper::createTranslationMatrix(1.0f, 0, 0);
+	cub.scale = Helper::createScaleMatrix(0.1f, 0.1f, 0.1f);
+	cub.translate = Helper::createTranslationMatrix(1.0f, 0, 1.0f);
 	cub2.translate = Helper::createTranslationMatrix(-1.0f, 0, 0);
 	cub2.center = Helper::createTranslationMatrix(-0.5f, -0.5f, -0.5f);;
 	cub2.scale = Helper::createScaleMatrix(0.2f, 0.2f, 0.2f);
 
 	sp.scale = Helper::createScaleMatrix(0.1f, 0.1f, 0.1f);
 	cy.scale = Helper::createScaleMatrix(0.1f, 0.1f, 0.1f);
+	cy.translate = Helper::createTranslationMatrix(-2.5f, 0.1f, 0.1f);
 	co.scale = Helper::createScaleMatrix(0.1f, 0.1f, 0.1f);
+	co.translate = Helper::createTranslationMatrix(2.5f, 0.1f, 0.1f);
 
 	cub2.translate = Helper::createTranslationMatrix(-3.0f, 0, 0);
 
 	sp.textura = &texture;
 	sp.normal_textura = &normal_texture;
+	cub.textura = &texture;
+	cub.normal_textura = &normal_texture;
+	co.textura = &texture;
+	co.normal_textura = &normal_texture;
+	cy.textura = &texture;
+	cy.normal_textura = &normal_texture;
 	//figures.push_back(&cub);
 	//figures.push_back(&cub2);
 	figures.push_back(&sp);
+	figures.push_back(&cub);
+	figures.push_back(&co);
+	figures.push_back(&cy);
 
 	def_cameraPos = { 0,0,1 };
 	def_cameraFront = { 0,0,-1 };
@@ -435,19 +476,38 @@ int main(int, char**)
 
 	cam = new Camera(cameraPos, cameraFront, cameraUp);
 	cam->SetViewport(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
-	cam->SetPerspective(fov, ((float)DEFAULT_HEIGHT / (float)DEFAULT_WIDTH), 0.1, 100);
+	cam->SetPerspective(fov, ((float)DEFAULT_HEIGHT / (float)DEFAULT_WIDTH), near_m,far_m);
 	cameras.push_back(cam);
 	active_camera_index = 0;
 
 	Light* li = new Light();
-	li->position = { 0.0f,0.0f,2.0f };
+	li->position = { 0.0f,-4.0f,0.0f };
 	li->Ac = 1;
 	li->Al = 0.09f;
 	li->Aq = 0.032f;
 	li->Id = { 1,1,1 };
 	li->Is = { 1,1,1 };
 
+	Light* li2 = new Light();
+	li2->position = { 2.0f,0.0f,1.5f };
+	li2->Ac = 1;
+	li2->Al = 0.09f;
+	li2->Aq = 0.032f;
+	li2->Id = { 1,0.1,0.1 };
+	li2->Is = { 1,1,1 };
+
+	Light* li3 = new Light();
+	li3->position = { -2.0f,0.0f,1.5f };
+	li3->Ac = 1;
+	li3->Al = 0.09f;
+	li3->Aq = 0.032f;
+	li3->Id = { 0.1,1,0.1 };
+	li3->Is = { 1,1,1 };
+
+
 	lights.push_back(li);
+	lights.push_back(li2);
+	lights.push_back(li3);
 
 	double alfa = 0.0;
 	fb.lights = &lights;
@@ -466,9 +526,13 @@ int main(int, char**)
 		fb.ClearColor(0.1f, 0.15f, 0.15f);
 
 		cam->LookAt(cameraPos, cameraFront, cameraUp);
-		cam->SetPerspective(fov, ((float)current_height / (float)current_width), 0.1, 5);
+		cam->x = angle.x;
+		cam->y = angle.y;
+		cam->SetPerspective(fov, ((float)current_height / (float)current_width), near_m, far_m);
 		cam = cameras[active_camera_index];
 		cam->SetPosFrontUp(cameraPos, cameraFront, cameraUp);
+		cam->SetAngles(angle.x,angle.y);
+		lookAt = cameraPos + cameraFront;
 		//lookAt = cameraPos - cameraFront;
 		auto proj = cam->GetProjectionMatrix();
 		auto view = cam->GetWorldMatrix();

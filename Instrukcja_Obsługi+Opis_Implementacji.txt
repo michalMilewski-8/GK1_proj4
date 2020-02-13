@@ -1,0 +1,61 @@
+1. Instrukcja
+	I. Poruszanie kamerą:
+		W - do przodu
+		A - w lewo
+		S - do tyłu
+		D - w prawo
+		E - w górę
+		Q - w dół
+		PPM + ruch myszą - obracanie kamery (wokół punktu (tylko takie obracanie zostało zaimplementowane))
+		Scroll na myszy - fov
+	II. Dodawanie figur, kamer, świateł:
+		Przyciski typu "Add ..." dodają nowe obiekty
+	III. Włączanie wyłączanie opcji:
+		Checkbox Paint tringles - włącza/wyłącza kolorowanie trójkątów
+		Checkbox Backface culling - włącza/wyłącza algorytm pomijania ścian tylnich
+		Checkbox z-buffering - włącza/wyłącza algorytm z-buffering(wyłącza też oświetlenie)
+		Checkbox Draw Lights - włącza/wyłącza renderowanie oświetlenia
+		Checkbox Draw Edges - włącza/wyłącza rysowanie krawędzi
+	IV. Modyfikacja figur:
+		->List Figures-> wybrana figura - umożliwia:
+			Draw Texture - pokrycie figury teksturą
+			Draw Normal Map Texture - pokrycie figury teksturowaną normal mapą
+			Możliwość poruszania figurą w płaszczyźnie XYZ
+			Możliwość skalowania figury w płaszczyźnie XYZ
+			Możliwość obracania figury w płaszczyźnie XYZ
+			Ustawienie poziomu odbicia lustrzanego
+			Ustawienie koloru figury a co za tym idzie odbicie rozproszone
+			Zmianę ilości trójkątów tworzących figury (nie dotyczy sześcianu) 
+			Zmiana długości boków, średnicy, wysokości (może różnić się w zależności od figur)
+			Usuwanie 
+	V. Modyfikacja kamer:
+		->List Cameras
+			fov , near i far są wspólne dla wszystkich kamer
+			Przynajmniej jedna kamera pozostaje na scenie
+			Usuwanie kamer
+			Wybór aktywnej kamery
+	VI. Modyfikacja świateł:
+		->List Lights-> odpowiednie światło
+			Usuwanie
+			Pozycja
+			Atenuacja (osłabienie wraz z odległością)
+			Kolory
+
+2. Implementacja
+	Parametry figur - Cone/Cube/Cylinder/Sphere.cpp->ModMenu()
+	Parametry światła - main.cpp -> ListLights()
+	Parametry kamery - main.cpp -> ListCameras()
+	Obsługa kamery - main.cpp -> processInput(), mouse_callback(), scroll_callback()
+	Edycja figur - Cone/Cube/Cylinder/Sphere.cpp->ModMenu(),CalculateVerticesAndTriangles(), ChangeEdgeLength()
+ 	Dodawanie, usuwanie figur, świateł, kamer - main.cpp -> ListCameras(), ListLights(),ListFigures()
+	Renderowanie - Triangle.cpp -> DrawTriangle()
+	Wypełnianie metodą scanlinii - FrameBuffer.cpp -> FillTriangle()
+	Obcinanie - Triangle.cpp -> DrawTriangleInternalClipping()
+	Obcinanie ścian tylnych - Triangle.cpp -> CalculateSideValue()
+	Interpolacja atrybutów wierzchołków - Triangle.cpp -> DrawTriangleInternalClipping(), FrameBuffer -> FillTRaingle()
+	Z-buffering - FrameBuffer.cpp -> SetPixel()
+	Shading - Light.cpp -> CalculateValueLightVal()
+	Teksturowanie - FrameBuffer.cpp -> FillTriangle()
+	Obliczanie wektorów  normalnych, binormalnych i stycznych - Figure.cpp -> CalculateNormalVectors()
+	NormalMapping - FrameBuffer.cpp -> FillTriangle()
+	Skalowalne okno aplikacji - main.cpp -> window_size_callback()

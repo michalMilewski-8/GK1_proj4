@@ -18,14 +18,15 @@ public:
 
 	void LookAt(glm::vec3 pos, glm::vec3 front, glm::vec3 up);
 	void SetPosFrontUp(glm::vec3& pos, glm::vec3& front, glm::vec3& up);
+	void SetAngles(float& x, float& y);
 	glm::vec3 pos;
+	float x = -1.56f, y = 0.0f;
 
 private:
 	glm::vec3 m_position;
 	glm::vec3 m_up_vector;
 	glm::vec3 m_forward_vector;
 
-	
 	glm::vec3 front;
 	glm::vec3 up;
 

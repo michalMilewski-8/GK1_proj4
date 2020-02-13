@@ -31,8 +31,8 @@ void Figure::ModMenu(int counter, Figure*& to_delete)
 	ImGui::Spacing();
 	ImGui::Text("Lighting parameters");
 	ImGui::SliderFloat("ks", &ks, 0.0f, 1.0f);
-	ImGui::SliderFloat("kd", &kd, 0.0f, 1.0f);
-	ImGui::SliderInt("n", &n, 0, 20);
+	ImGui::ColorPicker3("kd", kd);
+	ImGui::SliderInt("n", &n, 1, 20);
 	ImGui::Spacing();
 }
 

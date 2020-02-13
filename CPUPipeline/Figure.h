@@ -47,7 +47,8 @@ public:
 	float y_angle = 0.0f;
 	float z_angle = 0.0f;
 
-	float kd = 0.6, ks = 0.2;
+	float kd[3] = {0.6f,0.6f,0.6f};
+	float ks = 0.2;
 	int n = 3;
 
 
